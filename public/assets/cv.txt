@@ -1,0 +1,54 @@
+Développeur en alternance spécialisé en backend, frontend et DevOps,
+passionné par l'optimisation des performances et l'automatisation via
+CI/CD. Je  cherche  à  développer  mes compétences  techniques  et  à
+contribuer à des projets innovants dans des environnements dynamiques
+À propos de moi
+Expérience Professionnelle
+Alternant Développeur Backend, Frontend & DevOps
+ Sept. 2023 - Aujourd'hui | Établissement Saint Michel
+Développement et maintenance d'applications web et API
+Mise en place et gestion des pipelines CI/CD (GitLab CI/CD)
+Automatisation du déploiement avec Docker et Bash
+Gestion et maintenance de bases de données PostgreSQL et SQL
+Server
+Documentation technique et suivi des bonnes pratiques DevOps
+Stage Développement Informatique
+ Nov. 2022 - Avril 2023 | Nicomatic
+Gestion et mise à jour de GLPI et base de données associée
+Installation d'un environnement de dev Linux
+Déploiement et intégration d'un agent OCS Inventory
+Rédaction de documentations techniques détaillées
+Apprenti en développement full-stack
+Lilyan Giraud
+lilyangiraud@gmail.com
+07 88 05 79 77
+219 Avenue du Saleve
+portfolio.mesnew.fr
+Soft Skills & Qualités
+Contact
+Langues
+ BTS SIO SLAM
+ Bac Pro SN RISC
+   Établissement Saint Michel
+   Lycée Saint Vincent de Paul
+   2023 - 2025
+   2020 - 2023
+Formation
+Français
+Anglais (B2)
+Résolution de problèmes 
+Esprit d'équipe 
+Adaptabilité 
+Autonomie
+ Backend : C#, Php, Python 
+Frontend : JavaScript, HTML, CSS
+ Bases de données : PostgreSQL, SQL Server
+ CI/CD & DevOps : GitLab CI/CD, Docker, Bash
+ Outils : GitHub, DBeaver, Notion
+Développement embarqués : Arduino Raspberry
+Compétences
+Informations
+Complémentaires
+Permis B 
+Mobilité – Haute-Savoie
+
