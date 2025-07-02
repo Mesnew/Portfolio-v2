@@ -2,153 +2,238 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
-import { Copy, Hash, RefreshCw } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Copy, Hash, CheckCircle } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
 
 export function HashCalculator() {
-    const [inputText, setInputText] = useState("")
-    const [sha256Hash, setSha256Hash] = useState("")
-    const [sha1Hash, setSha1Hash] = useState("")
-    const [simpleHash, setSimpleHash] = useState("")
+    const [input, setInput] = useState("")
+    const [hashes, setHashes] = useState<{
+        sha256: string
+        sha1: string
+        simple: string
+        base64: string
+    }>({
+        sha256: "",
+        sha1: "",
+        simple: "",
+        base64: "",
+    })
     const [isCalculating, setIsCalculating] = useState(false)
+    const [copiedHash, setCopiedHash] = useState<string | null>(null)
+    const { toast } = useToast()
 
-    // Fonction pour calculer SHA-256
-    const calculateSHA256 = async (text: string) => {
-        const encoder = new TextEncoder()
-        const data = encoder.encode(text)
-        const hashBuffer = await crypto.subtle.digest("SHA-256", data)
-        const hashArray = Array.from(new Uint8Array(hashBuffer))
-        return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")
-    }
-
-    // Fonction pour calculer SHA-1
-    const calculateSHA1 = async (text: string) => {
-        const encoder = new TextEncoder()
-        const data = encoder.encode(text)
-        const hashBuffer = await crypto.subtle.digest("SHA-1", data)
-        const hashArray = Array.from(new Uint8Array(hashBuffer))
-        return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")
-    }
-
-    // Fonction pour calculer un hash simple (pour démonstration)
-    const calculateSimpleHash = (text: string) => {
+    // Simple hash function for demonstration
+    const simpleHash = (str: string): string => {
         let hash = 0
-        for (let i = 0; i < text.length; i++) {
-            const char = text.charCodeAt(i)
+        for (let i = 0; i < str.length; i++) {
+            const char = str.charCodeAt(i)
             hash = (hash << 5) - hash + char
-            hash = hash & hash // Convertir en 32bit integer
+            hash = hash & hash // Convert to 32-bit integer
         }
         return Math.abs(hash).toString(16)
     }
 
     const calculateHashes = async () => {
-        if (!inputText.trim()) {
-            setSha256Hash("")
-            setSha1Hash("")
-            setSimpleHash("")
+        if (!input.trim()) {
+            toast({
+                title: "Erreur",
+                description: "Veuillez saisir du texte à hasher",
+                variant: "destructive",
+            })
             return
         }
 
         setIsCalculating(true)
 
         try {
-            const [sha256, sha1] = await Promise.all([calculateSHA256(inputText), calculateSHA1(inputText)])
+            const encoder = new TextEncoder()
+            const data = encoder.encode(input)
 
-            setSha256Hash(sha256)
-            setSha1Hash(sha1)
-            setSimpleHash(calculateSimpleHash(inputText))
+            // SHA-256
+            const sha256Buffer = await crypto.subtle.digest("SHA-256", data)
+            const sha256Array = Array.from(new Uint8Array(sha256Buffer))
+            const sha256Hash = sha256Array.map((b) => b.toString(16).padStart(2, "0")).join("")
+
+            // SHA-1
+            const sha1Buffer = await crypto.subtle.digest("SHA-1", data)
+            const sha1Array = Array.from(new Uint8Array(sha1Buffer))
+            const sha1Hash = sha1Array.map((b) => b.toString(16).padStart(2, "0")).join("")
+
+            // Simple hash
+            const simpleHashResult = simpleHash(input)
+
+            // Base64
+            const base64 = btoa(input)
+
+            setHashes({
+                sha256: sha256Hash,
+                sha1: sha1Hash,
+                simple: simpleHashResult,
+                base64: base64,
+            })
+
+            toast({
+                title: "Succès",
+                description: "Tous les hash ont été calculés avec succès",
+            })
         } catch (error) {
-            console.error("Erreur lors du calcul des hash:", error)
+            toast({
+                title: "Erreur",
+                description: "Erreur lors du calcul des hash",
+                variant: "destructive",
+            })
         } finally {
             setIsCalculating(false)
         }
     }
 
-    const copyToClipboard = (text: string) => {
-        navigator.clipboard.writeText(text)
+    const copyToClipboard = async (text: string, type: string) => {
+        try {
+            await navigator.clipboard.writeText(text)
+            setCopiedHash(type)
+            setTimeout(() => setCopiedHash(null), 2000)
+            toast({
+                title: "Copié !",
+                description: `Hash ${type} copié dans le presse-papiers`,
+            })
+        } catch (error) {
+            toast({
+                title: "Erreur",
+                description: "Impossible de copier dans le presse-papiers",
+                variant: "destructive",
+            })
+        }
     }
 
-    const clearAll = () => {
-        setInputText("")
-        setSha256Hash("")
-        setSha1Hash("")
-        setSimpleHash("")
+    const loadExample = () => {
+        setInput("Bonjour, ceci est un exemple de texte pour tester le calculateur de hash cryptographique !")
     }
 
     return (
-        <div className="space-y-4">
-            <div className="space-y-2">
-                <Label>Texte à hasher</Label>
-                <Textarea
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    placeholder="Entrez votre texte ici..."
-                    rows={3}
-                />
-            </div>
-
-            <div className="flex gap-2">
-                <Button onClick={calculateHashes} disabled={isCalculating} className="flex-1">
-                    <Hash className="h-4 w-4 mr-2" />
-                    {isCalculating ? "Calcul..." : "Calculer"}
-                </Button>
-                <Button variant="outline" onClick={clearAll} className="bg-transparent">
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Effacer
-                </Button>
-            </div>
-
-            {/* Résultats */}
-            {(sha256Hash || sha1Hash || simpleHash) && (
-                <div className="space-y-4">
-                    {/* SHA-256 */}
-                    {sha256Hash && (
-                        <div className="space-y-2">
-                            <Label className="text-sm font-medium">SHA-256</Label>
-                            <div className="flex gap-2">
-                                <Input value={sha256Hash} readOnly className="font-mono text-xs" />
-                                <Button variant="outline" size="sm" onClick={() => copyToClipboard(sha256Hash)}>
-                                    <Copy className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* SHA-1 */}
-                    {sha1Hash && (
-                        <div className="space-y-2">
-                            <Label className="text-sm font-medium">SHA-1</Label>
-                            <div className="flex gap-2">
-                                <Input value={sha1Hash} readOnly className="font-mono text-xs" />
-                                <Button variant="outline" size="sm" onClick={() => copyToClipboard(sha1Hash)}>
-                                    <Copy className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Hash simple */}
-                    {simpleHash && (
-                        <div className="space-y-2">
-                            <Label className="text-sm font-medium">Hash Simple</Label>
-                            <div className="flex gap-2">
-                                <Input value={simpleHash} readOnly className="font-mono text-xs" />
-                                <Button variant="outline" size="sm" onClick={() => copyToClipboard(simpleHash)}>
-                                    <Copy className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        </div>
-                    )}
+        <Card className="w-full max-w-4xl mx-auto">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <Hash className="h-5 w-5" />
+                    Calculateur de Hash
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                        <label className="text-sm font-medium">Texte à hasher</label>
+                        <Button variant="outline" size="sm" onClick={loadExample}>
+                            Exemple
+                        </Button>
+                    </div>
+                    <Textarea
+                        placeholder="Saisissez votre texte ici..."
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        rows={4}
+                        className="resize-none"
+                    />
                 </div>
-            )}
 
-            <div className="text-xs text-muted-foreground">
-                <p>• SHA-256 : Hash cryptographique sécurisé (256 bits)</p>
-                <p>• SHA-1 : Hash cryptographique (160 bits, moins sécurisé)</p>
-                <p>• Hash Simple : Algorithme basique pour démonstration</p>
-            </div>
-        </div>
+                <Button onClick={calculateHashes} disabled={isCalculating || !input.trim()} className="w-full">
+                    {isCalculating ? "Calcul en cours..." : "Calculer les Hash"}
+                </Button>
+
+                {(hashes.sha256 || hashes.sha1 || hashes.simple || hashes.base64) && (
+                    <div className="space-y-4">
+                        <h3 className="text-lg font-semibold">Résultats</h3>
+
+                        {/* SHA-256 */}
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                                <Badge variant="secondary">SHA-256</Badge>
+                                <span className="text-sm text-muted-foreground">Algorithme cryptographique sécurisé</span>
+                            </div>
+                            <div className="flex gap-2">
+                                <div className="flex-1 p-3 bg-muted rounded-md font-mono text-sm break-all">{hashes.sha256}</div>
+                                <Button variant="outline" size="sm" onClick={() => copyToClipboard(hashes.sha256, "SHA-256")}>
+                                    {copiedHash === "SHA-256" ? (
+                                        <CheckCircle className="h-4 w-4 text-green-500" />
+                                    ) : (
+                                        <Copy className="h-4 w-4" />
+                                    )}
+                                </Button>
+                            </div>
+                        </div>
+
+                        {/* SHA-1 */}
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                                <Badge variant="secondary">SHA-1</Badge>
+                                <span className="text-sm text-muted-foreground">Algorithme cryptographique (obsolète)</span>
+                            </div>
+                            <div className="flex gap-2">
+                                <div className="flex-1 p-3 bg-muted rounded-md font-mono text-sm break-all">{hashes.sha1}</div>
+                                <Button variant="outline" size="sm" onClick={() => copyToClipboard(hashes.sha1, "SHA-1")}>
+                                    {copiedHash === "SHA-1" ? (
+                                        <CheckCircle className="h-4 w-4 text-green-500" />
+                                    ) : (
+                                        <Copy className="h-4 w-4" />
+                                    )}
+                                </Button>
+                            </div>
+                        </div>
+
+                        {/* Simple Hash */}
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                                <Badge variant="outline">Hash Simple</Badge>
+                                <span className="text-sm text-muted-foreground">Algorithme basique pour démonstration</span>
+                            </div>
+                            <div className="flex gap-2">
+                                <div className="flex-1 p-3 bg-muted rounded-md font-mono text-sm break-all">{hashes.simple}</div>
+                                <Button variant="outline" size="sm" onClick={() => copyToClipboard(hashes.simple, "Simple")}>
+                                    {copiedHash === "Simple" ? (
+                                        <CheckCircle className="h-4 w-4 text-green-500" />
+                                    ) : (
+                                        <Copy className="h-4 w-4" />
+                                    )}
+                                </Button>
+                            </div>
+                        </div>
+
+                        {/* Base64 */}
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                                <Badge variant="outline">Base64</Badge>
+                                <span className="text-sm text-muted-foreground">Encodage (pas un hash)</span>
+                            </div>
+                            <div className="flex gap-2">
+                                <div className="flex-1 p-3 bg-muted rounded-md font-mono text-sm break-all">{hashes.base64}</div>
+                                <Button variant="outline" size="sm" onClick={() => copyToClipboard(hashes.base64, "Base64")}>
+                                    {copiedHash === "Base64" ? (
+                                        <CheckCircle className="h-4 w-4 text-green-500" />
+                                    ) : (
+                                        <Copy className="h-4 w-4" />
+                                    )}
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <div className="text-sm text-muted-foreground space-y-1">
+                    <p>
+                        <strong>SHA-256:</strong> Algorithme de hachage cryptographique sécurisé, utilisé dans Bitcoin
+                    </p>
+                    <p>
+                        <strong>SHA-1:</strong> Ancien algorithme, maintenant considéré comme obsolète
+                    </p>
+                    <p>
+                        <strong>Hash Simple:</strong> Algorithme basique pour démonstration uniquement
+                    </p>
+                    <p>
+                        <strong>Base64:</strong> Encodage réversible, pas un vrai hash
+                    </p>
+                </div>
+            </CardContent>
+        </Card>
     )
 }
