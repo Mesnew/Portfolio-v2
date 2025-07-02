@@ -47,7 +47,7 @@ export function Header() {
 
   return (
       <header
-          className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "backdrop-blur-md bg-background/80" : "bg-transparent"}`}
+          className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "backdrop-blur-md bg-background/80" : ""}`}
       >
         <nav className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -63,9 +63,17 @@ export function Header() {
             {/* Navigation Desktop */}
             <div className="hidden md:flex items-center space-x-8">
               <a
+                  href="/"
+                  onClick={(e) => handleNavigation(e, "/")}
+                  className="text-foreground hover:text-primary transition-colors relative group"
+              >
+                Accueil
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
+              </a>
+              <a
                   href="/cv"
                   onClick={(e) => handleNavigation(e, "/cv")}
-                  className="text-foreground/80 hover:text-primary transition-colors relative group"
+                  className="text-foreground hover:text-primary transition-colors relative group"
               >
                 CV
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
@@ -73,7 +81,7 @@ export function Header() {
               <a
                   href="/laboratoire"
                   onClick={(e) => handleNavigation(e, "/laboratoire")}
-                  className="text-foreground/80 hover:text-primary transition-colors relative group"
+                  className="text-foreground hover:text-primary transition-colors relative group"
               >
                 Laboratoire
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
@@ -81,7 +89,7 @@ export function Header() {
               <a
                   href="/realisations"
                   onClick={(e) => handleNavigation(e, "/realisations")}
-                  className="text-foreground/80 hover:text-primary transition-colors relative group"
+                  className="text-foreground hover:text-primary transition-colors relative group"
               >
                 Réalisations
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
@@ -89,7 +97,7 @@ export function Header() {
               <a
                   href="/veille"
                   onClick={(e) => handleNavigation(e, "/veille")}
-                  className="text-foreground/80 hover:text-primary transition-colors relative group"
+                  className="text-foreground hover:text-primary transition-colors relative group"
               >
                 Veille
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
@@ -97,7 +105,7 @@ export function Header() {
               <a
                   href="/contact"
                   onClick={(e) => handleNavigation(e, "/contact")}
-                  className="text-foreground/80 hover:text-primary transition-colors relative group"
+                  className="text-foreground hover:text-primary transition-colors relative group"
               >
                 Contact
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
@@ -106,9 +114,15 @@ export function Header() {
 
             {/* Boutons d'action */}
             <div className="flex items-center space-x-4">
-              {/* Toggle Theme */}
+              {/* Bouton thème */}
               {mounted && (
-                  <Button variant="ghost" size="icon" onClick={toggleTheme} className="relative overflow-hidden">
+                  <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={toggleTheme}
+                      className="relative overflow-hidden"
+                      aria-label={theme === "dark" ? "Passer au mode clair" : "Passer au mode sombre"}
+                  >
                     <div className="absolute inset-0 bg-primary/10 rounded-full scale-0 transition-transform duration-300 hover:scale-100"></div>
                     {theme === "dark" ? (
                         <Sun className="h-5 w-5 relative z-10" />
@@ -118,49 +132,56 @@ export function Header() {
                   </Button>
               )}
 
-              {/* Menu Mobile */}
-              <Button variant="ghost" size="icon" onClick={toggleMenu} className="md:hidden">
+              {/* Bouton menu mobile */}
+              <Button variant="ghost" size="icon" className="md:hidden" onClick={toggleMenu} aria-label="Menu">
                 {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </Button>
             </div>
           </div>
 
-          {/* Menu Mobile */}
+          {/* Menu mobile */}
           {isMenuOpen && (
               <GlassPanel className="md:hidden mt-4 p-6">
                 <div className="flex flex-col space-y-4">
                   <a
+                      href="/"
+                      onClick={(e) => handleNavigation(e, "/")}
+                      className="text-lg font-medium hover:text-primary transition-colors"
+                  >
+                    Accueil
+                  </a>
+                  <a
                       href="/cv"
                       onClick={(e) => handleNavigation(e, "/cv")}
-                      className="text-lg font-medium text-foreground/80 hover:text-primary transition-colors"
+                      className="text-lg font-medium hover:text-primary transition-colors"
                   >
                     CV
                   </a>
                   <a
                       href="/laboratoire"
                       onClick={(e) => handleNavigation(e, "/laboratoire")}
-                      className="text-lg font-medium text-foreground/80 hover:text-primary transition-colors"
+                      className="text-lg font-medium hover:text-primary transition-colors"
                   >
                     Laboratoire
                   </a>
                   <a
                       href="/realisations"
                       onClick={(e) => handleNavigation(e, "/realisations")}
-                      className="text-lg font-medium text-foreground/80 hover:text-primary transition-colors"
+                      className="text-lg font-medium hover:text-primary transition-colors"
                   >
                     Réalisations
                   </a>
                   <a
                       href="/veille"
                       onClick={(e) => handleNavigation(e, "/veille")}
-                      className="text-lg font-medium text-foreground/80 hover:text-primary transition-colors"
+                      className="text-lg font-medium hover:text-primary transition-colors"
                   >
-                    Veille Technologique
+                    Veille
                   </a>
                   <a
                       href="/contact"
                       onClick={(e) => handleNavigation(e, "/contact")}
-                      className="text-lg font-medium text-foreground/80 hover:text-primary transition-colors"
+                      className="text-lg font-medium hover:text-primary transition-colors"
                   >
                     Contact
                   </a>
