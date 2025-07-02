@@ -84,12 +84,18 @@ export default function LaboratoirePage() {
     const [decodedText, setDecodedText] = useState("")
 
     // États pour le dé 3D
+    const [diceValue, setDiceValue] = useState(1)
     const [isDiceRolling, setIsDiceRolling] = useState(false)
-    const [randomNumber, setRandomNumber] = useState<number | null>(null)
+    const [diceHistory, setDiceHistory] = useState<number[]>([])
+
+    // États pour l'horloge mondiale
+    const [selectedTimezone, setSelectedTimezone] = useState("Europe/Paris")
+    const [currentTime, setCurrentTime] = useState(new Date())
+
+    // États pour le générateur de nombres aléatoires
     const [randomMin, setRandomMin] = useState(1)
     const [randomMax, setRandomMax] = useState(100)
-    const [currentTime, setCurrentTime] = useState(new Date())
-    const [selectedTimezone, setSelectedTimezone] = useState("Europe/Paris")
+    const [randomResult, setRandomResult] = useState<number | null>(null)
 
     // Effet pour l'horloge
     useEffect(() => {
@@ -317,8 +323,10 @@ export default function LaboratoirePage() {
     const handleDiceRoll = (value: number) => {
         setIsDiceRolling(true)
         setTimeout(() => {
+            setDiceValue(value)
+            setDiceHistory([value, ...diceHistory.slice(0, 9)])
             setIsDiceRolling(false)
-        }, 4000)
+        }, 2000)
     }
 
     // Fonction pour formater l'heure selon le fuseau horaire
@@ -328,27 +336,20 @@ export default function LaboratoirePage() {
             hour: "2-digit",
             minute: "2-digit",
             second: "2-digit",
-            hour12: false,
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
         }).format(currentTime)
     }
 
     // Fonction pour générer un nombre aléatoire
     const generateRandomNumber = () => {
         if (randomMin > randomMax) {
-            alert("La valeur minimum doit être inférieure à la valeur maximum")
+            setRandomResult(null)
             return
         }
         const result = Math.floor(Math.random() * (randomMax - randomMin + 1)) + randomMin
-        setRandomNumber(result)
-    }
-
-    const formatDate = (timezone: string) => {
-        return new Intl.DateTimeFormat("fr-FR", {
-            timeZone: timezone,
-            weekday: "short",
-            day: "2-digit",
-            month: "2-digit",
-        }).format(currentTime)
+        setRandomResult(result)
     }
 
     const timezones = [
@@ -360,74 +361,41 @@ export default function LaboratoirePage() {
         { value: "Europe/London", label: "Londres (UK)" },
         { value: "Australia/Sydney", label: "Sydney (Australie)" },
         { value: "America/Sao_Paulo", label: "São Paulo (Brésil)" },
-        { value: "Asia/Dubai", label: "Dubai (Émirats arabes unis)" },
     ]
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-purple-900 dark:to-indigo-900">
+        <div className="min-h-screen flex flex-col">
             <PlanetBackground3D planetType="jupiter" />
             <Header />
 
             <main className="flex-1 relative z-10">
-                <div className="container mx-auto px-4 py-8">
-                    <div className="text-center mb-8">
-                        <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">
-                            🧪 Laboratoire d'Outils
+                <div className="container mx-auto px-4 py-16">
+                    <div className="text-center mb-12">
+                        <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
+                            Laboratoire
                         </h1>
-                        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                            Une collection d'outils interactifs et utiles pour vos projets quotidiens
+                        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                            Explorez mes outils interactifs et expérimentations créatives
                         </p>
                     </div>
 
                     <Tabs defaultValue="outils" className="w-full">
-                        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 mb-8">
+                        <TabsList className="grid w-full grid-cols-4 mb-8">
                             <TabsTrigger value="outils" className="flex items-center gap-2">
                                 <Calculator className="h-4 w-4" />
-                                <span className="hidden sm:inline">Outils</span>
+                                Outils
                             </TabsTrigger>
                             <TabsTrigger value="jeux" className="flex items-center gap-2">
                                 <Gamepad2 className="h-4 w-4" />
-                                <span className="hidden sm:inline">Mini-Jeux</span>
+                                Mini-Jeux
                             </TabsTrigger>
                             <TabsTrigger value="demos" className="flex items-center gap-2">
                                 <Code className="h-4 w-4" />
-                                <span className="hidden sm:inline">Démos Tech</span>
+                                Démos Tech
                             </TabsTrigger>
                             <TabsTrigger value="creatif" className="flex items-center gap-2">
                                 <Paintbrush className="h-4 w-4" />
-                                <span className="hidden sm:inline">Créatif</span>
-                            </TabsTrigger>
-                            <TabsTrigger value="dice" className="flex items-center gap-2">
-                                <Dice1 className="h-4 w-4" />
-                                <span className="hidden sm:inline">Dé 3D</span>
-                            </TabsTrigger>
-                            <TabsTrigger value="canvas" className="flex items-center gap-2">
-                                <Palette className="h-4 w-4" />
-                                <span className="hidden sm:inline">Canvas</span>
-                            </TabsTrigger>
-                            <TabsTrigger value="hash" className="flex items-center gap-2">
-                                <Hash className="h-4 w-4" />
-                                <span className="hidden sm:inline">Hash</span>
-                            </TabsTrigger>
-                            <TabsTrigger value="text" className="flex items-center gap-2">
-                                <QrCode className="h-4 w-4" />
-                                <span className="hidden sm:inline">Texte</span>
-                            </TabsTrigger>
-                            <TabsTrigger value="qr" className="flex items-center gap-2">
-                                <QrCode className="h-4 w-4" />
-                                <span className="hidden sm:inline">QR Code</span>
-                            </TabsTrigger>
-                            <TabsTrigger value="random" className="flex items-center gap-2">
-                                <Shuffle className="h-4 w-4" />
-                                <span className="hidden sm:inline">Aléatoire</span>
-                            </TabsTrigger>
-                            <TabsTrigger value="calculator" className="flex items-center gap-2">
-                                <Calculator className="h-4 w-4" />
-                                <span className="hidden sm:inline">Calc</span>
-                            </TabsTrigger>
-                            <TabsTrigger value="clock" className="flex items-center gap-2">
-                                <Clock className="h-4 w-4" />
-                                <span className="hidden sm:inline">Horloge</span>
+                                Créatif
                             </TabsTrigger>
                         </TabsList>
 
@@ -797,7 +765,7 @@ export default function LaboratoirePage() {
                                         </div>
 
                                         <div className="text-center">
-                                            <div className="text-2xl font-mono font-bold mb-4">{formatTimeForTimezone(selectedTimezone)}</div>
+                                            <div className="text-2xl font-mono font-bold">{formatTimeForTimezone(selectedTimezone)}</div>
                                             <div className="text-sm text-muted-foreground mt-2">
                                                 {timezones.find((tz) => tz.value === selectedTimezone)?.label}
                                             </div>
@@ -895,6 +863,19 @@ export default function LaboratoirePage() {
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         <Dice3D onRoll={handleDiceRoll} isRolling={isDiceRolling} />
+
+                                        {diceHistory.length > 0 && (
+                                            <div>
+                                                <Label className="text-sm font-medium">Historique des lancers</Label>
+                                                <div className="flex flex-wrap gap-1 mt-2">
+                                                    {diceHistory.map((value, index) => (
+                                                        <Badge key={index} variant="secondary" className="text-xs">
+                                                            {value}
+                                                        </Badge>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
                                     </CardContent>
                                 </Card>
 
@@ -920,7 +901,7 @@ export default function LaboratoirePage() {
                                         </div>
 
                                         <div className="text-center">
-                                            <div className="text-4xl font-bold mb-4">{randomNumber !== null ? randomNumber : "?"}</div>
+                                            <div className="text-4xl font-bold mb-4">{randomResult !== null ? randomResult : "?"}</div>
                                             <Button onClick={generateRandomNumber} className="w-full">
                                                 <Shuffle className="h-4 w-4 mr-2" />
                                                 Générer
@@ -932,7 +913,7 @@ export default function LaboratoirePage() {
                         </TabsContent>
 
                         <TabsContent value="demos" className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Calculateur de Hash */}
                                 <Card>
                                     <CardHeader>
@@ -964,7 +945,7 @@ export default function LaboratoirePage() {
                         </TabsContent>
 
                         <TabsContent value="creatif" className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Analyseur de texte */}
                                 <Card>
                                     <CardHeader>
@@ -994,167 +975,32 @@ export default function LaboratoirePage() {
                                 </Card>
                             </div>
                         </TabsContent>
-
-                        <TabsContent value="dice" className="space-y-6">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        <Dice1 className="h-5 w-5" />
-                                        Dé 3D Réaliste
-                                        <Badge variant="secondary">Physique</Badge>
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <Dice3D onRoll={handleDiceRoll} isRolling={isDiceRolling} />
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-
-                        <TabsContent value="canvas" className="space-y-6">
-                            <DrawingCanvas />
-                        </TabsContent>
-
-                        <TabsContent value="hash" className="space-y-6">
-                            <HashCalculator />
-                        </TabsContent>
-
-                        <TabsContent value="text" className="space-y-6">
-                            <TextAnalyzer />
-                        </TabsContent>
-
-                        <TabsContent value="qr" className="space-y-6">
-                            <QRGenerator />
-                        </TabsContent>
-
-                        <TabsContent value="random" className="space-y-6">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        <Shuffle className="h-5 w-5" />
-                                        Générateur de Nombres Aléatoires
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-6">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-medium">Minimum</label>
-                                            <input
-                                                type="number"
-                                                value={randomMin}
-                                                onChange={(e) => setRandomMin(Number.parseInt(e.target.value) || 1)}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-medium">Maximum</label>
-                                            <input
-                                                type="number"
-                                                value={randomMax}
-                                                onChange={(e) => setRandomMax(Number.parseInt(e.target.value) || 100)}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <button
-                                        onClick={generateRandomNumber}
-                                        className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                                    >
-                                        Générer un nombre
-                                    </button>
-
-                                    {randomNumber !== null && (
-                                        <div className="text-center p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border">
-                                            <div className="text-4xl font-bold text-blue-600 mb-2">{randomNumber}</div>
-                                            <div className="text-sm text-muted-foreground">
-                                                Nombre entre {randomMin} et {randomMax}
-                                            </div>
-                                        </div>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-
-                        <TabsContent value="calculator" className="space-y-6">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        <Calculator className="h-5 w-5" />
-                                        Calculatrice Simple
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="grid grid-cols-4 gap-2 max-w-xs mx-auto">
-                                        <div className="col-span-4 mb-4">
-                                            <input
-                                                type="text"
-                                                readOnly
-                                                className="w-full px-4 py-3 text-right text-xl border border-gray-300 rounded-md bg-gray-50"
-                                                placeholder="0"
-                                            />
-                                        </div>
-
-                                        {["C", "±", "%", "÷"].map((btn) => (
-                                            <button key={btn} className="p-3 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors">
-                                                {btn}
-                                            </button>
-                                        ))}
-
-                                        {["7", "8", "9", "×"].map((btn) => (
-                                            <button key={btn} className="p-3 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">
-                                                {btn}
-                                            </button>
-                                        ))}
-
-                                        {["4", "5", "6", "-"].map((btn) => (
-                                            <button key={btn} className="p-3 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">
-                                                {btn}
-                                            </button>
-                                        ))}
-
-                                        {["1", "2", "3", "+"].map((btn) => (
-                                            <button key={btn} className="p-3 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">
-                                                {btn}
-                                            </button>
-                                        ))}
-
-                                        <button className="col-span-2 p-3 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">
-                                            0
-                                        </button>
-                                        <button className="p-3 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">.</button>
-                                        <button className="p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors">
-                                            =
-                                        </button>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-
-                        <TabsContent value="clock" className="space-y-6">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        <Clock className="h-5 w-5" />
-                                        Horloge Mondiale
-                                        <Badge variant="secondary">Temps réel</Badge>
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                        {timezones.map((zone) => (
-                                            <Card key={zone.value} className="text-center">
-                                                <CardContent className="p-4">
-                                                    <div className="text-lg font-semibold text-blue-600 mb-1">{zone.label}</div>
-                                                    <div className="text-2xl font-mono font-bold mb-1">{formatTimeForTimezone(zone.value)}</div>
-                                                    <div className="text-sm text-muted-foreground">{formatDate(zone.value)}</div>
-                                                </CardContent>
-                                            </Card>
-                                        ))}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
                     </Tabs>
+
+                    {/* Section Technologies */}
+                    <div className="mt-16 text-center">
+                        <h2 className="text-2xl font-bold mb-6">Technologies Utilisées</h2>
+                        <div className="flex flex-wrap justify-center gap-2">
+                            {[
+                                "React",
+                                "TypeScript",
+                                "Next.js",
+                                "Tailwind CSS",
+                                "Shadcn/ui",
+                                "JavaScript",
+                                "HTML5",
+                                "CSS3",
+                                "Canvas API",
+                                "Web Crypto API",
+                                "Web APIs",
+                                "Local Storage",
+                            ].map((tech) => (
+                                <Badge key={tech} variant="secondary" className="text-sm">
+                                    {tech}
+                                </Badge>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             </main>
 
