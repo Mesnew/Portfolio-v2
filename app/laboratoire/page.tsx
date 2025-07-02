@@ -11,11 +11,12 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Slider } from "@/components/ui/slider"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { Textarea } from "@/components/ui/textarea"
 import { Dice3D } from "@/components/dice-3d"
 import { QRGenerator } from "@/components/qr-generator"
 import { DrawingCanvas } from "@/components/drawing-canvas"
+import { HashCalculator } from "@/components/hash-calculator"
+import { TextAnalyzer } from "@/components/text-analyzer"
 import {
     Calculator,
     Key,
@@ -24,21 +25,19 @@ import {
     Gamepad2,
     Code,
     Paintbrush,
-    FileText,
     Play,
     Pause,
     RotateCcw,
     Copy,
     RefreshCw,
-    Zap,
     Target,
     Dice1,
     Hash,
-    Download,
     QrCode,
     Thermometer,
     Clock,
     Shuffle,
+    BarChart3,
 } from "lucide-react"
 
 export default function LaboratoirePage() {
@@ -72,14 +71,6 @@ export default function LaboratoirePage() {
     const [gameMessage, setGameMessage] = useState("Devinez un nombre entre 1 et 100 !")
     const [gameWon, setGameWon] = useState(false)
 
-    // États pour le simulateur de progression
-    const [progress, setProgress] = useState(0)
-    const [progressRunning, setProgressRunning] = useState(false)
-
-    // États pour le générateur Lorem Ipsum
-    const [loremParagraphs, setLoremParagraphs] = useState([3])
-    const [generatedLorem, setGeneratedLorem] = useState("")
-
     // États pour le convertisseur d'unités
     const [fromValue, setFromValue] = useState("")
     const [fromUnit, setFromUnit] = useState("celsius")
@@ -100,6 +91,11 @@ export default function LaboratoirePage() {
     // États pour l'horloge mondiale
     const [selectedTimezone, setSelectedTimezone] = useState("Europe/Paris")
     const [currentTime, setCurrentTime] = useState(new Date())
+
+    // États pour le générateur de nombres aléatoires
+    const [randomMin, setRandomMin] = useState(1)
+    const [randomMax, setRandomMax] = useState(100)
+    const [randomResult, setRandomResult] = useState<number | null>(null)
 
     // Effet pour l'horloge
     useEffect(() => {
@@ -276,115 +272,6 @@ export default function LaboratoirePage() {
         setGameWon(false)
     }
 
-    // Fonction pour le simulateur de progression
-    const startProgress = () => {
-        if (progressRunning) return
-
-        setProgressRunning(true)
-        setProgress(0)
-
-        const interval = setInterval(() => {
-            setProgress((prev) => {
-                if (prev >= 100) {
-                    clearInterval(interval)
-                    setProgressRunning(false)
-                    return 100
-                }
-                return prev + Math.random() * 5
-            })
-        }, 100)
-    }
-
-    // Fonction pour générer Lorem Ipsum
-    const generateLorem = () => {
-        const loremWords = [
-            "lorem",
-            "ipsum",
-            "dolor",
-            "sit",
-            "amet",
-            "consectetur",
-            "adipiscing",
-            "elit",
-            "sed",
-            "do",
-            "eiusmod",
-            "tempor",
-            "incididunt",
-            "ut",
-            "labore",
-            "et",
-            "dolore",
-            "magna",
-            "aliqua",
-            "enim",
-            "ad",
-            "minim",
-            "veniam",
-            "quis",
-            "nostrud",
-            "exercitation",
-            "ullamco",
-            "laboris",
-            "nisi",
-            "aliquip",
-            "ex",
-            "ea",
-            "commodo",
-            "consequat",
-            "duis",
-            "aute",
-            "irure",
-            "in",
-            "reprehenderit",
-            "voluptate",
-            "velit",
-            "esse",
-            "cillum",
-            "fugiat",
-            "nulla",
-            "pariatur",
-            "excepteur",
-            "sint",
-            "occaecat",
-            "cupidatat",
-            "non",
-            "proident",
-            "sunt",
-            "culpa",
-            "qui",
-            "officia",
-            "deserunt",
-            "mollit",
-            "anim",
-            "id",
-            "est",
-            "laborum",
-        ]
-
-        let result = ""
-        for (let p = 0; p < loremParagraphs[0]; p++) {
-            const sentenceCount = Math.floor(Math.random() * 5) + 3
-            let paragraph = ""
-
-            for (let s = 0; s < sentenceCount; s++) {
-                const wordCount = Math.floor(Math.random() * 10) + 5
-                let sentence = ""
-
-                for (let w = 0; w < wordCount; w++) {
-                    const word = loremWords[Math.floor(Math.random() * loremWords.length)]
-                    sentence += (w === 0 ? word.charAt(0).toUpperCase() + word.slice(1) : word) + " "
-                }
-
-                paragraph += sentence.trim() + ". "
-            }
-
-            result += paragraph.trim() + "\n\n"
-        }
-
-        setGeneratedLorem(result.trim())
-    }
-
     // Fonctions pour le convertisseur d'unités
     const convertTemperature = () => {
         const value = Number.parseFloat(fromValue)
@@ -439,7 +326,7 @@ export default function LaboratoirePage() {
             setDiceValue(value)
             setDiceHistory([value, ...diceHistory.slice(0, 9)])
             setIsDiceRolling(false)
-        }, 1000)
+        }, 2000)
     }
 
     // Fonction pour formater l'heure selon le fuseau horaire
@@ -453,6 +340,16 @@ export default function LaboratoirePage() {
             month: "2-digit",
             year: "numeric",
         }).format(currentTime)
+    }
+
+    // Fonction pour générer un nombre aléatoire
+    const generateRandomNumber = () => {
+        if (randomMin > randomMax) {
+            setRandomResult(null)
+            return
+        }
+        const result = Math.floor(Math.random() * (randomMax - randomMin + 1)) + randomMin
+        setRandomResult(result)
     }
 
     const timezones = [
@@ -995,28 +892,17 @@ export default function LaboratoirePage() {
                                         <div className="grid grid-cols-2 gap-2">
                                             <div>
                                                 <Label>Min</Label>
-                                                <Input type="number" defaultValue="1" id="min-random" />
+                                                <Input type="number" value={randomMin} onChange={(e) => setRandomMin(Number(e.target.value))} />
                                             </div>
                                             <div>
                                                 <Label>Max</Label>
-                                                <Input type="number" defaultValue="100" id="max-random" />
+                                                <Input type="number" value={randomMax} onChange={(e) => setRandomMax(Number(e.target.value))} />
                                             </div>
                                         </div>
 
                                         <div className="text-center">
-                                            <div className="text-4xl font-bold mb-4" id="random-result">
-                                                {Math.floor(Math.random() * 100) + 1}
-                                            </div>
-                                            <Button
-                                                onClick={() => {
-                                                    const min = Number((document.getElementById("min-random") as HTMLInputElement)?.value) || 1
-                                                    const max = Number((document.getElementById("max-random") as HTMLInputElement)?.value) || 100
-                                                    const result = Math.floor(Math.random() * (max - min + 1)) + min
-                                                    const element = document.getElementById("random-result")
-                                                    if (element) element.textContent = result.toString()
-                                                }}
-                                                className="w-full"
-                                            >
+                                            <div className="text-4xl font-bold mb-4">{randomResult !== null ? randomResult : "?"}</div>
+                                            <Button onClick={generateRandomNumber} className="w-full">
                                                 <Shuffle className="h-4 w-4 mr-2" />
                                                 Générer
                                             </Button>
@@ -1028,32 +914,17 @@ export default function LaboratoirePage() {
 
                         <TabsContent value="demos" className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Simulateur de progression */}
+                                {/* Calculateur de Hash */}
                                 <Card>
                                     <CardHeader>
                                         <CardTitle className="flex items-center gap-2">
-                                            <Zap className="h-5 w-5" />
-                                            Simulateur de progression
+                                            <Hash className="h-5 w-5" />
+                                            Calculateur de Hash
                                         </CardTitle>
-                                        <CardDescription>Démonstration d'une barre de progression animée</CardDescription>
+                                        <CardDescription>Générez des hash cryptographiques (SHA-256, SHA-1, etc.)</CardDescription>
                                     </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        <div className="space-y-2">
-                                            <div className="flex justify-between text-sm">
-                                                <span>Progression</span>
-                                                <span>{Math.round(progress)}%</span>
-                                            </div>
-                                            <Progress value={progress} className="w-full h-4" />
-                                        </div>
-
-                                        <Button onClick={startProgress} disabled={progressRunning} className="w-full">
-                                            <Play className="h-4 w-4 mr-2" />
-                                            {progressRunning ? "En cours..." : "Démarrer la simulation"}
-                                        </Button>
-
-                                        <div className="text-xs text-muted-foreground text-center">
-                                            Simulation d'un processus de chargement avec vitesse variable
-                                        </div>
+                                    <CardContent>
+                                        <HashCalculator />
                                     </CardContent>
                                 </Card>
 
@@ -1075,65 +946,17 @@ export default function LaboratoirePage() {
 
                         <TabsContent value="creatif" className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Générateur Lorem Ipsum */}
+                                {/* Analyseur de texte */}
                                 <Card>
                                     <CardHeader>
                                         <CardTitle className="flex items-center gap-2">
-                                            <FileText className="h-5 w-5" />
-                                            Générateur Lorem Ipsum
+                                            <BarChart3 className="h-5 w-5" />
+                                            Analyseur de texte
                                         </CardTitle>
-                                        <CardDescription>Générez du texte placeholder personnalisé</CardDescription>
+                                        <CardDescription>Analysez vos textes : mots, caractères, fréquence</CardDescription>
                                     </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        <div>
-                                            <Label>Nombre de paragraphes: {loremParagraphs[0]}</Label>
-                                            <Slider
-                                                value={loremParagraphs}
-                                                onValueChange={setLoremParagraphs}
-                                                max={10}
-                                                min={1}
-                                                step={1}
-                                                className="mt-2"
-                                            />
-                                        </div>
-
-                                        <Button onClick={generateLorem} className="w-full">
-                                            <FileText className="h-4 w-4 mr-2" />
-                                            Générer Lorem Ipsum
-                                        </Button>
-
-                                        {generatedLorem && (
-                                            <div className="space-y-2">
-                                                <Textarea value={generatedLorem} readOnly className="min-h-[200px] text-sm" />
-                                                <div className="flex gap-2">
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => copyToClipboard(generatedLorem)}
-                                                        className="flex-1"
-                                                    >
-                                                        <Copy className="h-4 w-4 mr-2" />
-                                                        Copier
-                                                    </Button>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => {
-                                                            const blob = new Blob([generatedLorem], { type: "text/plain" })
-                                                            const url = URL.createObjectURL(blob)
-                                                            const a = document.createElement("a")
-                                                            a.href = url
-                                                            a.download = "lorem-ipsum.txt"
-                                                            a.click()
-                                                        }}
-                                                        className="flex-1"
-                                                    >
-                                                        <Download className="h-4 w-4 mr-2" />
-                                                        Télécharger
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        )}
+                                    <CardContent>
+                                        <TextAnalyzer />
                                     </CardContent>
                                 </Card>
 
@@ -1168,6 +991,7 @@ export default function LaboratoirePage() {
                                 "HTML5",
                                 "CSS3",
                                 "Canvas API",
+                                "Web Crypto API",
                                 "Web APIs",
                                 "Local Storage",
                             ].map((tech) => (
