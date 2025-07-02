@@ -6,88 +6,45 @@ import { Footer } from "@/components/footer"
 import { PlanetBackground3D } from "@/components/PlanetBackground3D"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Slider } from "@/components/ui/slider"
+import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Slider } from "@/components/ui/slider"
 import { Badge } from "@/components/ui/badge"
-import {
-    Calculator,
-    Key,
-    Palette,
-    Timer,
-    Play,
-    Pause,
-    RotateCcw,
-    Gamepad2,
-    Code,
-    Paintbrush,
-    FileText,
-    Zap,
-} from "lucide-react"
+import { Calculator, Key, Palette, Timer, Gamepad2, Code, Paintbrush, FileText } from "lucide-react"
 
 export default function LaboratoirePage() {
-    // États pour la calculatrice
-    const [calcDisplay, setCalcDisplay] = useState("0")
-    const [calcPrevious, setCalcPrevious] = useState("")
-    const [calcOperation, setCalcOperation] = useState("")
-
-    // États pour le générateur de mot de passe
+    // États pour les différents outils
+    const [calculatorDisplay, setCalculatorDisplay] = useState("0")
     const [passwordLength, setPasswordLength] = useState([12])
     const [generatedPassword, setGeneratedPassword] = useState("")
-
-    // États pour la palette de couleurs
     const [selectedColor, setSelectedColor] = useState("#3b82f6")
-    const [randomColor, setRandomColor] = useState("#ff6b6b")
+    const [timerSeconds, setTimerSeconds] = useState(0)
+    const [timerRunning, setTimerRunning] = useState(false)
+    const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(null)
 
-    // États pour le chronomètre
-    const [time, setTime] = useState(0)
-    const [isRunning, setIsRunning] = useState(false)
-
-    // Fonctions calculatrice
-    const handleCalcNumber = (num: string) => {
-        setCalcDisplay(calcDisplay === "0" ? num : calcDisplay + num)
-    }
-
-    const handleCalcOperation = (op: string) => {
-        setCalcPrevious(calcDisplay)
-        setCalcOperation(op)
-        setCalcDisplay("0")
-    }
-
-    const handleCalcEquals = () => {
-        const prev = Number.parseFloat(calcPrevious)
-        const current = Number.parseFloat(calcDisplay)
-        let result = 0
-
-        switch (calcOperation) {
-            case "+":
-                result = prev + current
-                break
-            case "-":
-                result = prev - current
-                break
-            case "*":
-                result = prev * current
-                break
-            case "/":
-                result = prev / current
-                break
-            default:
-                return
+    // Fonctions pour la calculatrice
+    const handleCalculatorInput = (value: string) => {
+        if (calculatorDisplay === "0" && value !== ".") {
+            setCalculatorDisplay(value)
+        } else {
+            setCalculatorDisplay(calculatorDisplay + value)
         }
-
-        setCalcDisplay(result.toString())
-        setCalcPrevious("")
-        setCalcOperation("")
     }
 
-    const handleCalcClear = () => {
-        setCalcDisplay("0")
-        setCalcPrevious("")
-        setCalcOperation("")
+    const calculateResult = () => {
+        try {
+            const result = eval(calculatorDisplay)
+            setCalculatorDisplay(result.toString())
+        } catch (error) {
+            setCalculatorDisplay("Erreur")
+        }
     }
 
-    // Fonction générateur de mot de passe
+    const clearCalculator = () => {
+        setCalculatorDisplay("0")
+    }
+
+    // Fonction pour générer un mot de passe
     const generatePassword = () => {
         const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*"
         let password = ""
@@ -97,38 +54,42 @@ export default function LaboratoirePage() {
         setGeneratedPassword(password)
     }
 
-    // Fonction générateur de couleur aléatoire
+    // Fonction pour générer une couleur aléatoire
     const generateRandomColor = () => {
-        const color =
+        const randomColor =
             "#" +
             Math.floor(Math.random() * 16777215)
                 .toString(16)
                 .padStart(6, "0")
-        setRandomColor(color)
+        setSelectedColor(randomColor)
     }
 
-    // Fonctions chronomètre
+    // Fonctions pour le chronomètre
     const startTimer = () => {
-        setIsRunning(true)
-        const interval = setInterval(() => {
-            setTime((prevTime) => prevTime + 1)
-        }, 1000)
-
-        if (!isRunning) {
-            // Store interval ID for cleanup
-            ;(window as any).timerInterval = interval
+        if (!timerRunning) {
+            setTimerRunning(true)
+            const interval = setInterval(() => {
+                setTimerSeconds((prev) => prev + 1)
+            }, 1000)
+            setTimerInterval(interval)
         }
     }
 
     const pauseTimer = () => {
-        setIsRunning(false)
-        clearInterval((window as any).timerInterval)
+        if (timerRunning && timerInterval) {
+            clearInterval(timerInterval)
+            setTimerRunning(false)
+            setTimerInterval(null)
+        }
     }
 
     const resetTimer = () => {
-        setTime(0)
-        setIsRunning(false)
-        clearInterval((window as any).timerInterval)
+        if (timerInterval) {
+            clearInterval(timerInterval)
+        }
+        setTimerRunning(false)
+        setTimerInterval(null)
+        setTimerSeconds(0)
     }
 
     const formatTime = (seconds: number) => {
@@ -138,36 +99,37 @@ export default function LaboratoirePage() {
     }
 
     return (
-        <>
+        <div className="min-h-screen flex flex-col">
             <PlanetBackground3D planetType="jupiter" />
             <Header />
-            <main className="min-h-screen pt-20">
-                <div className="container mx-auto px-4 py-12">
+
+            <main className="flex-1 relative z-10">
+                <div className="container mx-auto px-4 py-16">
                     <div className="text-center mb-12">
                         <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
                             Laboratoire
                         </h1>
                         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                            Espace d'expérimentation et de démonstration de mes compétences techniques
+                            Explorez mes outils interactifs et expérimentations créatives
                         </p>
                     </div>
 
                     <Tabs defaultValue="outils" className="w-full">
                         <TabsList className="grid w-full grid-cols-4 mb-8">
                             <TabsTrigger value="outils" className="flex items-center gap-2">
-                                <Zap className="w-4 h-4" />
+                                <Calculator className="h-4 w-4" />
                                 Outils
                             </TabsTrigger>
                             <TabsTrigger value="jeux" className="flex items-center gap-2">
-                                <Gamepad2 className="w-4 h-4" />
+                                <Gamepad2 className="h-4 w-4" />
                                 Mini-Jeux
                             </TabsTrigger>
                             <TabsTrigger value="demos" className="flex items-center gap-2">
-                                <Code className="w-4 h-4" />
+                                <Code className="h-4 w-4" />
                                 Démos Tech
                             </TabsTrigger>
                             <TabsTrigger value="creatif" className="flex items-center gap-2">
-                                <Paintbrush className="w-4 h-4" />
+                                <Paintbrush className="h-4 w-4" />
                                 Créatif
                             </TabsTrigger>
                         </TabsList>
@@ -175,88 +137,88 @@ export default function LaboratoirePage() {
                         <TabsContent value="outils" className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {/* Calculatrice */}
-                                <Card className="backdrop-blur-sm bg-background/80">
+                                <Card>
                                     <CardHeader>
                                         <CardTitle className="flex items-center gap-2">
-                                            <Calculator className="w-5 h-5" />
+                                            <Calculator className="h-5 w-5" />
                                             Calculatrice
                                         </CardTitle>
-                                        <CardDescription>Calculatrice fonctionnelle en JavaScript</CardDescription>
+                                        <CardDescription>Calculatrice simple et fonctionnelle</CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
-                                        <div className="bg-muted p-4 rounded text-right text-2xl font-mono">{calcDisplay}</div>
+                                        <div className="bg-muted p-4 rounded text-right text-2xl font-mono">{calculatorDisplay}</div>
                                         <div className="grid grid-cols-4 gap-2">
-                                            <Button variant="outline" onClick={handleCalcClear}>
+                                            <Button variant="outline" onClick={clearCalculator}>
                                                 C
                                             </Button>
-                                            <Button variant="outline" onClick={() => handleCalcOperation("/")}>
+                                            <Button variant="outline" onClick={() => handleCalculatorInput("/")}>
                                                 /
                                             </Button>
-                                            <Button variant="outline" onClick={() => handleCalcOperation("*")}>
+                                            <Button variant="outline" onClick={() => handleCalculatorInput("*")}>
                                                 ×
                                             </Button>
-                                            <Button variant="outline" onClick={() => handleCalcOperation("-")}>
+                                            <Button variant="outline" onClick={() => handleCalculatorInput("-")}>
                                                 -
                                             </Button>
 
-                                            <Button variant="outline" onClick={() => handleCalcNumber("7")}>
+                                            <Button variant="outline" onClick={() => handleCalculatorInput("7")}>
                                                 7
                                             </Button>
-                                            <Button variant="outline" onClick={() => handleCalcNumber("8")}>
+                                            <Button variant="outline" onClick={() => handleCalculatorInput("8")}>
                                                 8
                                             </Button>
-                                            <Button variant="outline" onClick={() => handleCalcNumber("9")}>
+                                            <Button variant="outline" onClick={() => handleCalculatorInput("9")}>
                                                 9
                                             </Button>
-                                            <Button variant="outline" onClick={() => handleCalcOperation("+")} className="row-span-2">
+                                            <Button variant="outline" onClick={() => handleCalculatorInput("+")}>
                                                 +
                                             </Button>
 
-                                            <Button variant="outline" onClick={() => handleCalcNumber("4")}>
+                                            <Button variant="outline" onClick={() => handleCalculatorInput("4")}>
                                                 4
                                             </Button>
-                                            <Button variant="outline" onClick={() => handleCalcNumber("5")}>
+                                            <Button variant="outline" onClick={() => handleCalculatorInput("5")}>
                                                 5
                                             </Button>
-                                            <Button variant="outline" onClick={() => handleCalcNumber("6")}>
+                                            <Button variant="outline" onClick={() => handleCalculatorInput("6")}>
                                                 6
                                             </Button>
-
-                                            <Button variant="outline" onClick={() => handleCalcNumber("1")}>
-                                                1
-                                            </Button>
-                                            <Button variant="outline" onClick={() => handleCalcNumber("2")}>
-                                                2
-                                            </Button>
-                                            <Button variant="outline" onClick={() => handleCalcNumber("3")}>
-                                                3
-                                            </Button>
-                                            <Button variant="outline" onClick={handleCalcEquals} className="row-span-2 bg-transparent">
+                                            <Button variant="outline" onClick={calculateResult} className="row-span-2 bg-transparent">
                                                 =
                                             </Button>
 
-                                            <Button variant="outline" onClick={() => handleCalcNumber("0")} className="col-span-2">
+                                            <Button variant="outline" onClick={() => handleCalculatorInput("1")}>
+                                                1
+                                            </Button>
+                                            <Button variant="outline" onClick={() => handleCalculatorInput("2")}>
+                                                2
+                                            </Button>
+                                            <Button variant="outline" onClick={() => handleCalculatorInput("3")}>
+                                                3
+                                            </Button>
+
+                                            <Button variant="outline" onClick={() => handleCalculatorInput("0")} className="col-span-2">
                                                 0
                                             </Button>
-                                            <Button variant="outline" onClick={() => handleCalcNumber(".")}>
+                                            <Button variant="outline" onClick={() => handleCalculatorInput(".")}>
                                                 .
                                             </Button>
                                         </div>
                                     </CardContent>
                                 </Card>
 
-                                {/* Générateur de mot de passe */}
-                                <Card className="backdrop-blur-sm bg-background/80">
+                                {/* Générateur de mots de passe */}
+                                <Card>
                                     <CardHeader>
                                         <CardTitle className="flex items-center gap-2">
-                                            <Key className="w-5 h-5" />
+                                            <Key className="h-5 w-5" />
                                             Générateur de mots de passe
                                         </CardTitle>
                                         <CardDescription>Créez des mots de passe sécurisés</CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         <div>
-                                            <label className="text-sm font-medium">Longueur: {passwordLength[0]}</label>
+                                            <Label>Longueur: {passwordLength[0]} caractères</Label>
                                             <Slider
                                                 value={passwordLength}
                                                 onValueChange={setPasswordLength}
@@ -276,37 +238,34 @@ export default function LaboratoirePage() {
                                 </Card>
 
                                 {/* Palette de couleurs */}
-                                <Card className="backdrop-blur-sm bg-background/80">
+                                <Card>
                                     <CardHeader>
                                         <CardTitle className="flex items-center gap-2">
-                                            <Palette className="w-5 h-5" />
+                                            <Palette className="h-5 w-5" />
                                             Palette de couleurs
                                         </CardTitle>
-                                        <CardDescription>Sélecteur et générateur de couleurs</CardDescription>
+                                        <CardDescription>Sélectionnez et générez des couleurs</CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
-                                        <div>
-                                            <label className="text-sm font-medium">Couleur sélectionnée</label>
-                                            <div className="flex items-center gap-2 mt-2">
-                                                <Input
-                                                    type="color"
-                                                    value={selectedColor}
-                                                    onChange={(e) => setSelectedColor(e.target.value)}
-                                                    className="w-16 h-10"
-                                                />
-                                                <Input value={selectedColor} readOnly className="font-mono" />
+                                        <div className="flex items-center gap-4">
+                                            <input
+                                                type="color"
+                                                value={selectedColor}
+                                                onChange={(e) => setSelectedColor(e.target.value)}
+                                                className="w-16 h-16 rounded border"
+                                            />
+                                            <div className="flex-1">
+                                                <div className="font-mono text-sm">{selectedColor}</div>
+                                                <div className="text-xs text-muted-foreground">
+                                                    RGB: {Number.parseInt(selectedColor.slice(1, 3), 16)},{" "}
+                                                    {Number.parseInt(selectedColor.slice(3, 5), 16)},{" "}
+                                                    {Number.parseInt(selectedColor.slice(5, 7), 16)}
+                                                </div>
                                             </div>
                                         </div>
-                                        <div>
-                                            <label className="text-sm font-medium">Couleur aléatoire</label>
-                                            <div className="flex items-center gap-2 mt-2">
-                                                <div className="w-16 h-10 rounded border" style={{ backgroundColor: randomColor }} />
-                                                <Input value={randomColor} readOnly className="font-mono" />
-                                            </div>
-                                            <Button onClick={generateRandomColor} className="w-full mt-2">
-                                                Générer couleur aléatoire
-                                            </Button>
-                                        </div>
+                                        <Button onClick={generateRandomColor} className="w-full">
+                                            Couleur aléatoire
+                                        </Button>
                                     </CardContent>
                                 </Card>
                             </div>
@@ -315,48 +274,51 @@ export default function LaboratoirePage() {
                         <TabsContent value="jeux" className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Chronomètre */}
-                                <Card className="backdrop-blur-sm bg-background/80">
+                                <Card>
                                     <CardHeader>
                                         <CardTitle className="flex items-center gap-2">
-                                            <Timer className="w-5 h-5" />
+                                            <Timer className="h-5 w-5" />
                                             Chronomètre
                                         </CardTitle>
-                                        <CardDescription>Timer fonctionnel avec contrôles</CardDescription>
+                                        <CardDescription>Mesurez le temps avec précision</CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         <div className="text-center">
-                                            <div className="text-4xl font-mono font-bold">{formatTime(time)}</div>
+                                            <div className="text-4xl font-mono font-bold">{formatTime(timerSeconds)}</div>
                                         </div>
-                                        <div className="flex justify-center gap-2">
-                                            <Button
-                                                onClick={isRunning ? pauseTimer : startTimer}
-                                                variant={isRunning ? "secondary" : "default"}
-                                            >
-                                                {isRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                                        <div className="flex gap-2">
+                                            <Button onClick={startTimer} disabled={timerRunning} className="flex-1">
+                                                Start
                                             </Button>
-                                            <Button onClick={resetTimer} variant="outline">
-                                                <RotateCcw className="w-4 h-4" />
+                                            <Button
+                                                onClick={pauseTimer}
+                                                disabled={!timerRunning}
+                                                variant="outline"
+                                                className="flex-1 bg-transparent"
+                                            >
+                                                Pause
+                                            </Button>
+                                            <Button onClick={resetTimer} variant="destructive" className="flex-1">
+                                                Reset
                                             </Button>
                                         </div>
                                     </CardContent>
                                 </Card>
 
                                 {/* Jeu de devinette */}
-                                <Card className="backdrop-blur-sm bg-background/80">
+                                <Card>
                                     <CardHeader>
                                         <CardTitle className="flex items-center gap-2">
-                                            <Gamepad2 className="w-5 h-5" />
+                                            <Gamepad2 className="h-5 w-5" />
                                             Jeu de devinette
                                         </CardTitle>
                                         <CardDescription>Devinez le nombre entre 1 et 100</CardDescription>
                                     </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        <div className="text-center">
+                                    <CardContent>
+                                        <div className="text-center py-8">
                                             <Badge variant="secondary">En développement</Badge>
+                                            <p className="text-sm text-muted-foreground mt-2">Bientôt disponible !</p>
                                         </div>
-                                        <p className="text-sm text-muted-foreground text-center">
-                                            Jeu interactif de devinette de nombres à venir
-                                        </p>
                                     </CardContent>
                                 </Card>
                             </div>
@@ -365,41 +327,32 @@ export default function LaboratoirePage() {
                         <TabsContent value="demos" className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Simulateur de progression */}
-                                <Card className="backdrop-blur-sm bg-background/80">
+                                <Card>
                                     <CardHeader>
-                                        <CardTitle className="flex items-center gap-2">
-                                            <Code className="w-5 h-5" />
-                                            Simulateur de progression
-                                        </CardTitle>
-                                        <CardDescription>Démonstration d'animations CSS/JS</CardDescription>
+                                        <CardTitle>Simulateur de progression</CardTitle>
+                                        <CardDescription>Démonstration d'une barre de progression</CardDescription>
                                     </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        <div className="w-full bg-muted rounded-full h-4">
-                                            <div
-                                                className="bg-primary h-4 rounded-full transition-all duration-1000 ease-out"
-                                                style={{ width: `${(time * 2) % 100}%` }}
-                                            />
+                                    <CardContent>
+                                        <div className="text-center py-8">
+                                            <Badge variant="secondary">En développement</Badge>
+                                            <p className="text-sm text-muted-foreground mt-2">
+                                                Animation de progression en cours de développement
+                                            </p>
                                         </div>
-                                        <p className="text-sm text-muted-foreground text-center">Progression: {(time * 2) % 100}%</p>
                                     </CardContent>
                                 </Card>
 
                                 {/* Intégration API */}
-                                <Card className="backdrop-blur-sm bg-background/80">
+                                <Card>
                                     <CardHeader>
-                                        <CardTitle className="flex items-center gap-2">
-                                            <Code className="w-5 h-5" />
-                                            Intégration API
-                                        </CardTitle>
-                                        <CardDescription>Démonstrations d'appels API</CardDescription>
+                                        <CardTitle>Intégration API</CardTitle>
+                                        <CardDescription>Démonstration d'appels API</CardDescription>
                                     </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        <div className="text-center">
+                                    <CardContent>
+                                        <div className="text-center py-8">
                                             <Badge variant="secondary">En développement</Badge>
+                                            <p className="text-sm text-muted-foreground mt-2">Intégration avec des APIs externes</p>
                                         </div>
-                                        <p className="text-sm text-muted-foreground text-center">
-                                            Intégrations avec APIs météo, citations, etc.
-                                        </p>
                                     </CardContent>
                                 </Card>
                             </div>
@@ -408,38 +361,38 @@ export default function LaboratoirePage() {
                         <TabsContent value="creatif" className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Canvas créatif */}
-                                <Card className="backdrop-blur-sm bg-background/80">
+                                <Card>
                                     <CardHeader>
                                         <CardTitle className="flex items-center gap-2">
-                                            <Paintbrush className="w-5 h-5" />
+                                            <Paintbrush className="h-5 w-5" />
                                             Canvas créatif
                                         </CardTitle>
                                         <CardDescription>Espace de dessin HTML5 Canvas</CardDescription>
                                     </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        <div className="text-center">
+                                    <CardContent>
+                                        <div className="text-center py-8">
                                             <Badge variant="secondary">En développement</Badge>
+                                            <p className="text-sm text-muted-foreground mt-2">
+                                                Outil de dessin interactif en cours de développement
+                                            </p>
                                         </div>
-                                        <p className="text-sm text-muted-foreground text-center">Outil de dessin interactif à venir</p>
                                     </CardContent>
                                 </Card>
 
                                 {/* Générateur Lorem */}
-                                <Card className="backdrop-blur-sm bg-background/80">
+                                <Card>
                                     <CardHeader>
                                         <CardTitle className="flex items-center gap-2">
-                                            <FileText className="w-5 h-5" />
+                                            <FileText className="h-5 w-5" />
                                             Générateur Lorem
                                         </CardTitle>
-                                        <CardDescription>Générateur de texte placeholder</CardDescription>
+                                        <CardDescription>Générez du texte placeholder</CardDescription>
                                     </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        <div className="text-center">
+                                    <CardContent>
+                                        <div className="text-center py-8">
                                             <Badge variant="secondary">En développement</Badge>
+                                            <p className="text-sm text-muted-foreground mt-2">Générateur de texte Lorem Ipsum</p>
                                         </div>
-                                        <p className="text-sm text-muted-foreground text-center">
-                                            Générateur de texte Lorem Ipsum personnalisé
-                                        </p>
                                     </CardContent>
                                 </Card>
                             </div>
@@ -447,7 +400,8 @@ export default function LaboratoirePage() {
                     </Tabs>
                 </div>
             </main>
+
             <Footer />
-        </>
+        </div>
     )
 }
