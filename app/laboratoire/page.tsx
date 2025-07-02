@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { PlanetBackground3D } from "@/components/PlanetBackground3D"
@@ -13,6 +13,9 @@ import { Slider } from "@/components/ui/slider"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Textarea } from "@/components/ui/textarea"
+import { Dice3D } from "@/components/dice-3d"
+import { QRGenerator } from "@/components/qr-generator"
+import { DrawingCanvas } from "@/components/drawing-canvas"
 import {
     Calculator,
     Key,
@@ -32,6 +35,10 @@ import {
     Dice1,
     Hash,
     Download,
+    QrCode,
+    Thermometer,
+    Clock,
+    Shuffle,
 } from "lucide-react"
 
 export default function LaboratoirePage() {
@@ -84,6 +91,23 @@ export default function LaboratoirePage() {
     const [encodedText, setEncodedText] = useState("")
     const [textToDecode, setTextToDecode] = useState("")
     const [decodedText, setDecodedText] = useState("")
+
+    // États pour le dé 3D
+    const [diceValue, setDiceValue] = useState(1)
+    const [isDiceRolling, setIsDiceRolling] = useState(false)
+    const [diceHistory, setDiceHistory] = useState<number[]>([])
+
+    // États pour l'horloge mondiale
+    const [selectedTimezone, setSelectedTimezone] = useState("Europe/Paris")
+    const [currentTime, setCurrentTime] = useState(new Date())
+
+    // Effet pour l'horloge
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentTime(new Date())
+        }, 1000)
+        return () => clearInterval(interval)
+    }, [])
 
     // Fonctions pour la calculatrice
     const inputNumber = (num: string) => {
@@ -408,6 +432,40 @@ export default function LaboratoirePage() {
         }
     }
 
+    // Fonctions pour le dé 3D
+    const handleDiceRoll = (value: number) => {
+        setIsDiceRolling(true)
+        setTimeout(() => {
+            setDiceValue(value)
+            setDiceHistory([value, ...diceHistory.slice(0, 9)])
+            setIsDiceRolling(false)
+        }, 1000)
+    }
+
+    // Fonction pour formater l'heure selon le fuseau horaire
+    const formatTimeForTimezone = (timezone: string) => {
+        return new Intl.DateTimeFormat("fr-FR", {
+            timeZone: timezone,
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+        }).format(currentTime)
+    }
+
+    const timezones = [
+        { value: "Europe/Paris", label: "Paris (France)" },
+        { value: "America/New_York", label: "New York (USA)" },
+        { value: "America/Los_Angeles", label: "Los Angeles (USA)" },
+        { value: "Asia/Tokyo", label: "Tokyo (Japon)" },
+        { value: "Asia/Shanghai", label: "Shanghai (Chine)" },
+        { value: "Europe/London", label: "Londres (UK)" },
+        { value: "Australia/Sydney", label: "Sydney (Australie)" },
+        { value: "America/Sao_Paulo", label: "São Paulo (Brésil)" },
+    ]
+
     return (
         <div className="min-h-screen flex flex-col">
             <PlanetBackground3D planetType="jupiter" />
@@ -684,7 +742,7 @@ export default function LaboratoirePage() {
                                 <Card>
                                     <CardHeader>
                                         <CardTitle className="flex items-center gap-2">
-                                            <RefreshCw className="h-5 w-5" />
+                                            <Thermometer className="h-5 w-5" />
                                             Convertisseur de température
                                         </CardTitle>
                                         <CardDescription>Convertissez entre Celsius, Fahrenheit et Kelvin</CardDescription>
@@ -783,11 +841,45 @@ export default function LaboratoirePage() {
                                         </div>
                                     </CardContent>
                                 </Card>
+
+                                {/* Horloge mondiale */}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Clock className="h-5 w-5" />
+                                            Horloge mondiale
+                                        </CardTitle>
+                                        <CardDescription>Consultez l'heure dans différents fuseaux horaires</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <div>
+                                            <Label>Fuseau horaire</Label>
+                                            <select
+                                                value={selectedTimezone}
+                                                onChange={(e) => setSelectedTimezone(e.target.value)}
+                                                className="w-full p-2 border rounded"
+                                            >
+                                                {timezones.map((tz) => (
+                                                    <option key={tz.value} value={tz.value}>
+                                                        {tz.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div className="text-center">
+                                            <div className="text-2xl font-mono font-bold">{formatTimeForTimezone(selectedTimezone)}</div>
+                                            <div className="text-sm text-muted-foreground mt-2">
+                                                {timezones.find((tz) => tz.value === selectedTimezone)?.label}
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
                             </div>
                         </TabsContent>
 
                         <TabsContent value="jeux" className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {/* Chronomètre */}
                                 <Card>
                                     <CardHeader>
@@ -863,22 +955,70 @@ export default function LaboratoirePage() {
                                     </CardContent>
                                 </Card>
 
-                                {/* Lanceur de dés */}
+                                {/* Lanceur de dés 3D */}
                                 <Card>
                                     <CardHeader>
                                         <CardTitle className="flex items-center gap-2">
                                             <Dice1 className="h-5 w-5" />
-                                            Lanceur de dés
+                                            Lanceur de dés 3D
                                         </CardTitle>
-                                        <CardDescription>Lancez des dés virtuels</CardDescription>
+                                        <CardDescription>Dé virtuel avec animation 3D</CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
+                                        <Dice3D onRoll={handleDiceRoll} isRolling={isDiceRolling} />
+
+                                        {diceHistory.length > 0 && (
+                                            <div>
+                                                <Label className="text-sm font-medium">Historique des lancers</Label>
+                                                <div className="flex flex-wrap gap-1 mt-2">
+                                                    {diceHistory.map((value, index) => (
+                                                        <Badge key={index} variant="secondary" className="text-xs">
+                                                            {value}
+                                                        </Badge>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+
+                                {/* Générateur de nombres aléatoires */}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Shuffle className="h-5 w-5" />
+                                            Générateur de nombres
+                                        </CardTitle>
+                                        <CardDescription>Générez des nombres aléatoires</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <Label>Min</Label>
+                                                <Input type="number" defaultValue="1" id="min-random" />
+                                            </div>
+                                            <div>
+                                                <Label>Max</Label>
+                                                <Input type="number" defaultValue="100" id="max-random" />
+                                            </div>
+                                        </div>
+
                                         <div className="text-center">
-                                            <div className="text-4xl mb-4">🎲</div>
-                                            <div className="text-2xl font-bold mb-4">{Math.floor(Math.random() * 6) + 1}</div>
-                                            <Button onClick={() => window.location.reload()} className="w-full">
-                                                <Dice1 className="h-4 w-4 mr-2" />
-                                                Lancer le dé
+                                            <div className="text-4xl font-bold mb-4" id="random-result">
+                                                {Math.floor(Math.random() * 100) + 1}
+                                            </div>
+                                            <Button
+                                                onClick={() => {
+                                                    const min = Number((document.getElementById("min-random") as HTMLInputElement)?.value) || 1
+                                                    const max = Number((document.getElementById("max-random") as HTMLInputElement)?.value) || 100
+                                                    const result = Math.floor(Math.random() * (max - min + 1)) + min
+                                                    const element = document.getElementById("random-result")
+                                                    if (element) element.textContent = result.toString()
+                                                }}
+                                                className="w-full"
+                                            >
+                                                <Shuffle className="h-4 w-4 mr-2" />
+                                                Générer
                                             </Button>
                                         </div>
                                     </CardContent>
@@ -921,16 +1061,13 @@ export default function LaboratoirePage() {
                                 <Card>
                                     <CardHeader>
                                         <CardTitle className="flex items-center gap-2">
-                                            <Code className="h-5 w-5" />
+                                            <QrCode className="h-5 w-5" />
                                             Générateur de QR Code
                                         </CardTitle>
                                         <CardDescription>Créez des QR codes personnalisés</CardDescription>
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="text-center py-8">
-                                            <Badge variant="secondary">En développement</Badge>
-                                            <p className="text-sm text-muted-foreground mt-2">Générateur de QR codes avec personnalisation</p>
-                                        </div>
+                                        <QRGenerator />
                                     </CardContent>
                                 </Card>
                             </div>
@@ -1010,18 +1147,7 @@ export default function LaboratoirePage() {
                                         <CardDescription>Espace de dessin HTML5 Canvas</CardDescription>
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="text-center py-8">
-                                            <Badge variant="secondary">En développement</Badge>
-                                            <p className="text-sm text-muted-foreground mt-2">Outil de dessin interactif avec HTML5 Canvas</p>
-                                            <div className="mt-4 p-4 border-2 border-dashed rounded">
-                                                <div className="text-xs text-muted-foreground">
-                                                    Fonctionnalités prévues :<br />• Dessin libre
-                                                    <br />• Formes géométriques
-                                                    <br />• Palette de couleurs
-                                                    <br />• Sauvegarde d'images
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <DrawingCanvas />
                                     </CardContent>
                                 </Card>
                             </div>
@@ -1041,6 +1167,7 @@ export default function LaboratoirePage() {
                                 "JavaScript",
                                 "HTML5",
                                 "CSS3",
+                                "Canvas API",
                                 "Web APIs",
                                 "Local Storage",
                             ].map((tech) => (
