@@ -186,16 +186,14 @@ export function Dice3D({ onRoll, isRolling: externalIsRolling }: Dice3DProps) {
         diceGroup.add(diceMesh)
 
         // Créer un cube standard pour les textures des faces
-        // L'ordre des faces dans BoxGeometry : +X, -X, +Y, -Y, +Z, -Z
-        // La caméra regarde depuis Z+, donc la face visible à (0,0,0) est +Z (index 4)
         const cubeGeometry = new THREE.BoxGeometry(20.1, 20.1, 20.1)
         const cubeMaterials = [
-            createDiceFaceMaterial(4), // face droite (+X) = 4
-            createDiceFaceMaterial(3), // face gauche (-X) = 3
-            createDiceFaceMaterial(2), // face haut (+Y) = 2
-            createDiceFaceMaterial(5), // face bas (-Y) = 5
-            createDiceFaceMaterial(1), // face avant (+Z) = 1 (visible par défaut)
-            createDiceFaceMaterial(6), // face arrière (-Z) = 6
+            createDiceFaceMaterial(4), // face droite (X+) - face 4
+            createDiceFaceMaterial(1), // face gauche (X-) - face 1
+            createDiceFaceMaterial(2), // face haut (Y+) - face 2
+            createDiceFaceMaterial(5), // face bas (Y-) - face 5
+            createDiceFaceMaterial(3), // face avant (Z+) - face 3
+            createDiceFaceMaterial(6), // face arrière (Z-) - face 6
         ]
 
         const cubeMesh = new THREE.Mesh(cubeGeometry, cubeMaterials)
@@ -264,15 +262,14 @@ export function Dice3D({ onRoll, isRolling: externalIsRolling }: Dice3DProps) {
             z: diceRef.current.rotation.z,
         }
 
-        // Rotations finales pour afficher la bonne face
-        // Correspondance avec la face visible depuis la caméra (Z+)
+        // Rotations finales pour afficher la bonne face (face visible depuis la caméra)
         const finalRotations = {
-            1: { x: 0, y: 0, z: 0 }, // face avant (+Z) - visible par défaut
-            2: { x: -Math.PI / 2, y: 0, z: 0 }, // face haut (+Y) - rotation vers le bas
-            3: { x: 0, y: -Math.PI / 2, z: 0 }, // face gauche (-X) - rotation vers la droite
-            4: { x: 0, y: Math.PI / 2, z: 0 }, // face droite (+X) - rotation vers la gauche
-            5: { x: Math.PI / 2, y: 0, z: 0 }, // face bas (-Y) - rotation vers le haut
-            6: { x: 0, y: Math.PI, z: 0 }, // face arrière (-Z) - rotation 180°
+            1: { x: 0, y: Math.PI / 2, z: 0 }, // face 1 visible
+            2: { x: Math.PI / 2, y: 0, z: 0 }, // face 2 visible
+            3: { x: 0, y: 0, z: 0 }, // face 3 visible
+            4: { x: 0, y: Math.PI, z: 0 }, // face 4 visible
+            5: { x: -Math.PI / 2, y: 0, z: 0 }, // face 5 visible
+            6: { x: 0, y: -Math.PI / 2, z: 0 }, // face 6 visible
         }
 
         const targetRotation = finalRotations[newValue as keyof typeof finalRotations]
