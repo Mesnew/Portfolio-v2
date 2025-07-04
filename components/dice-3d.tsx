@@ -188,12 +188,12 @@ export function Dice3D({ onRoll, isRolling: externalIsRolling }: Dice3DProps) {
         // Créer un cube standard pour les textures des faces
         const cubeGeometry = new THREE.BoxGeometry(20.1, 20.1, 20.1)
         const cubeMaterials = [
-            createDiceFaceMaterial(4), // face droite (X+) - face 4
+            createDiceFaceMaterial(6), // face droite (X+) - face 4
             createDiceFaceMaterial(1), // face gauche (X-) - face 1
             createDiceFaceMaterial(2), // face haut (Y+) - face 2
             createDiceFaceMaterial(5), // face bas (Y-) - face 5
             createDiceFaceMaterial(3), // face avant (Z+) - face 3
-            createDiceFaceMaterial(6), // face arrière (Z-) - face 6
+            createDiceFaceMaterial(4), // face arrière (Z-) - face 6
         ]
 
         const cubeMesh = new THREE.Mesh(cubeGeometry, cubeMaterials)

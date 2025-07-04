@@ -4,41 +4,21 @@ import type React from "react"
 
 import { useRef, useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Slider } from "@/components/ui/slider"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
-import { Brush, Eraser, Square, Circle, Minus, Download, Trash2, Undo, Redo, Palette } from "lucide-react"
-
-type Tool = "brush" | "eraser" | "rectangle" | "circle" | "line"
-type CanvasSize = "small" | "medium" | "large" | "xlarge" | "custom"
-
-interface Point {
-    x: number
-    y: number
-}
-
-interface DrawAction {
-    tool: Tool
-    color: string
-    size: number
-    points: Point[]
-    startPoint?: Point
-    endPoint?: Point
-}
+import { Paintbrush, Eraser, Square, Circle, Minus, Download, RotateCcw, Redo, Palette } from "lucide-react"
 
 export function DrawingCanvas() {
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const [isDrawing, setIsDrawing] = useState(false)
-    const [tool, setTool] = useState<Tool>("brush")
+    const [tool, setTool] = useState<"brush" | "eraser" | "rectangle" | "circle" | "line">("brush")
     const [color, setColor] = useState("#000000")
     const [brushSize, setBrushSize] = useState(5)
-    const [canvasSize, setCanvasSize] = useState<CanvasSize>("medium")
+    const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 })
     const [history, setHistory] = useState<ImageData[]>([])
     const [historyIndex, setHistoryIndex] = useState(-1)
-    const [startPoint, setStartPoint] = useState<Point | null>(null)
-    const [customColor, setCustomColor] = useState("#ff0000")
+    const [startPos, setStartPos] = useState({ x: 0, y: 0 })
 
     const colors = [
         "#000000",
@@ -54,17 +34,32 @@ export function DrawingCanvas() {
         "#ffc0cb",
         "#a52a2a",
         "#808080",
-        "#000080",
         "#008000",
+        "#000080",
     ]
 
-    const canvasSizes = {
-        small: { width: 400, height: 300, label: "400×300" },
-        medium: { width: 600, height: 400, label: "600×400" },
-        large: { width: 800, height: 600, label: "800×600" },
-        xlarge: { width: 1000, height: 700, label: "1000×700" },
-        custom: { width: 500, height: 500, label: "500×500" },
-    }
+    const canvasSizes = [
+        { label: "Petit", width: 400, height: 300 },
+        { label: "Moyen", width: 600, height: 450 },
+        { label: "Grand", width: 800, height: 600 },
+        { label: "Large", width: 1000, height: 600 },
+        { label: "XL", width: 1000, height: 700 },
+    ]
+
+    useEffect(() => {
+        const canvas = canvasRef.current
+        if (!canvas) return
+
+        const ctx = canvas.getContext("2d")
+        if (!ctx) return
+
+        // Initialiser le canvas avec un fond blanc
+        ctx.fillStyle = "#ffffff"
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+        // Sauvegarder l'état initial
+        saveToHistory()
+    }, [canvasSize])
 
     const saveToHistory = () => {
         const canvas = canvasRef.current
@@ -83,43 +78,41 @@ export function DrawingCanvas() {
     const undo = () => {
         if (historyIndex > 0) {
             const canvas = canvasRef.current
-            const ctx = canvas?.getContext("2d")
-            if (!canvas || !ctx) return
+            if (!canvas) return
 
-            setHistoryIndex(historyIndex - 1)
-            ctx.putImageData(history[historyIndex - 1], 0, 0)
+            const ctx = canvas.getContext("2d")
+            if (!ctx) return
+
+            const newIndex = historyIndex - 1
+            ctx.putImageData(history[newIndex], 0, 0)
+            setHistoryIndex(newIndex)
         }
     }
 
     const redo = () => {
         if (historyIndex < history.length - 1) {
             const canvas = canvasRef.current
-            const ctx = canvas?.getContext("2d")
-            if (!canvas || !ctx) return
+            if (!canvas) return
 
-            setHistoryIndex(historyIndex + 1)
-            ctx.putImageData(history[historyIndex + 1], 0, 0)
+            const ctx = canvas.getContext("2d")
+            if (!ctx) return
+
+            const newIndex = historyIndex + 1
+            ctx.putImageData(history[newIndex], 0, 0)
+            setHistoryIndex(newIndex)
         }
     }
 
     const clearCanvas = () => {
         const canvas = canvasRef.current
-        const ctx = canvas?.getContext("2d")
-        if (!canvas || !ctx) return
+        if (!canvas) return
+
+        const ctx = canvas.getContext("2d")
+        if (!ctx) return
 
         ctx.fillStyle = "#ffffff"
         ctx.fillRect(0, 0, canvas.width, canvas.height)
         saveToHistory()
-    }
-
-    const downloadCanvas = (format: "png" | "jpg" = "png") => {
-        const canvas = canvasRef.current
-        if (!canvas) return
-
-        const link = document.createElement("a")
-        link.download = `drawing-${Date.now()}.${format}`
-        link.href = canvas.toDataURL(`image/${format}`)
-        link.click()
     }
 
     const getMousePos = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -137,15 +130,27 @@ export function DrawingCanvas() {
     }
 
     const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
-        const canvas = canvasRef.current
-        const ctx = canvas?.getContext("2d")
-        if (!canvas || !ctx) return
-
         const pos = getMousePos(e)
+        setStartPos(pos)
         setIsDrawing(true)
-        setStartPoint(pos)
 
-        if (tool === "brush" || tool === "eraser") {
+        const canvas = canvasRef.current
+        if (!canvas) return
+
+        const ctx = canvas.getContext("2d")
+        if (!ctx) return
+
+        ctx.lineCap = "round"
+        ctx.lineJoin = "round"
+        ctx.lineWidth = brushSize
+
+        if (tool === "brush") {
+            ctx.globalCompositeOperation = "source-over"
+            ctx.strokeStyle = color
+            ctx.beginPath()
+            ctx.moveTo(pos.x, pos.y)
+        } else if (tool === "eraser") {
+            ctx.globalCompositeOperation = "destination-out"
             ctx.beginPath()
             ctx.moveTo(pos.x, pos.y)
         }
@@ -155,91 +160,89 @@ export function DrawingCanvas() {
         if (!isDrawing) return
 
         const canvas = canvasRef.current
-        const ctx = canvas?.getContext("2d")
-        if (!canvas || !ctx) return
+        if (!canvas) return
+
+        const ctx = canvas.getContext("2d")
+        if (!ctx) return
 
         const pos = getMousePos(e)
 
-        if (tool === "brush") {
-            ctx.globalCompositeOperation = "source-over"
-            ctx.strokeStyle = color
-            ctx.lineWidth = brushSize
-            ctx.lineCap = "round"
-            ctx.lineJoin = "round"
-            ctx.lineTo(pos.x, pos.y)
-            ctx.stroke()
-        } else if (tool === "eraser") {
-            ctx.globalCompositeOperation = "destination-out"
-            ctx.lineWidth = brushSize
-            ctx.lineCap = "round"
-            ctx.lineJoin = "round"
+        if (tool === "brush" || tool === "eraser") {
             ctx.lineTo(pos.x, pos.y)
             ctx.stroke()
         }
     }
 
     const stopDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
-        if (!isDrawing || !startPoint) return
+        if (!isDrawing) return
 
         const canvas = canvasRef.current
-        const ctx = canvas?.getContext("2d")
-        if (!canvas || !ctx) return
+        if (!canvas) return
+
+        const ctx = canvas.getContext("2d")
+        if (!ctx) return
 
         const pos = getMousePos(e)
-        setIsDrawing(false)
-
-        ctx.globalCompositeOperation = "source-over"
-        ctx.strokeStyle = color
-        ctx.lineWidth = brushSize
 
         if (tool === "rectangle") {
-            const width = pos.x - startPoint.x
-            const height = pos.y - startPoint.y
-            ctx.strokeRect(startPoint.x, startPoint.y, width, height)
+            ctx.globalCompositeOperation = "source-over"
+            ctx.strokeStyle = color
+            ctx.lineWidth = brushSize
+            ctx.strokeRect(
+                Math.min(startPos.x, pos.x),
+                Math.min(startPos.y, pos.y),
+                Math.abs(pos.x - startPos.x),
+                Math.abs(pos.y - startPos.y),
+            )
         } else if (tool === "circle") {
-            const radius = Math.sqrt(Math.pow(pos.x - startPoint.x, 2) + Math.pow(pos.y - startPoint.y, 2))
+            ctx.globalCompositeOperation = "source-over"
+            ctx.strokeStyle = color
+            ctx.lineWidth = brushSize
+            const radius = Math.sqrt(Math.pow(pos.x - startPos.x, 2) + Math.pow(pos.y - startPos.y, 2))
             ctx.beginPath()
-            ctx.arc(startPoint.x, startPoint.y, radius, 0, 2 * Math.PI)
+            ctx.arc(startPos.x, startPos.y, radius, 0, 2 * Math.PI)
             ctx.stroke()
         } else if (tool === "line") {
+            ctx.globalCompositeOperation = "source-over"
+            ctx.strokeStyle = color
+            ctx.lineWidth = brushSize
             ctx.beginPath()
-            ctx.moveTo(startPoint.x, startPoint.y)
+            ctx.moveTo(startPos.x, startPos.y)
             ctx.lineTo(pos.x, pos.y)
             ctx.stroke()
         }
 
+        setIsDrawing(false)
         saveToHistory()
-        setStartPoint(null)
     }
 
-    useEffect(() => {
+    const downloadCanvas = (format: "png" | "jpg") => {
         const canvas = canvasRef.current
-        const ctx = canvas?.getContext("2d")
-        if (!canvas || !ctx) return
+        if (!canvas) return
 
-        // Initialize white background
-        ctx.fillStyle = "#ffffff"
-        ctx.fillRect(0, 0, canvas.width, canvas.height)
-        saveToHistory()
-    }, [canvasSize])
-
-    const currentSize = canvasSizes[canvasSize]
+        const link = document.createElement("a")
+        link.download = `drawing.${format}`
+        link.href = canvas.toDataURL(`image/${format}`)
+        link.click()
+    }
 
     return (
         <Card className="w-full max-w-6xl mx-auto">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                    <Palette className="h-5 w-5" />
-                    Canvas Créatif
+                    <Paintbrush className="h-5 w-5" />
+                    Canvas de Dessin Avancé
+                    <Badge variant="secondary">HTML5</Badge>
                 </CardTitle>
+                <CardDescription>Outil de dessin complet avec formes géométriques, historique et export</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-                {/* Toolbar */}
-                <div className="flex flex-wrap gap-4 items-center p-4 bg-muted rounded-lg">
-                    {/* Tools */}
+                {/* Barre d'outils */}
+                <div className="flex flex-wrap gap-4 items-center">
+                    {/* Outils */}
                     <div className="flex gap-2">
                         <Button variant={tool === "brush" ? "default" : "outline"} size="sm" onClick={() => setTool("brush")}>
-                            <Brush className="h-4 w-4" />
+                            <Paintbrush className="h-4 w-4" />
                         </Button>
                         <Button variant={tool === "eraser" ? "default" : "outline"} size="sm" onClick={() => setTool("eraser")}>
                             <Eraser className="h-4 w-4" />
@@ -261,103 +264,113 @@ export function DrawingCanvas() {
 
                     <Separator orientation="vertical" className="h-8" />
 
-                    {/* Colors */}
-                    <div className="flex gap-2 flex-wrap">
+                    {/* Taille du pinceau */}
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium">Taille:</span>
+                        <input
+                            type="range"
+                            min="1"
+                            max="50"
+                            value={brushSize}
+                            onChange={(e) => setBrushSize(Number(e.target.value))}
+                            className="w-20"
+                        />
+                        <span className="text-sm w-8">{brushSize}</span>
+                    </div>
+
+                    <Separator orientation="vertical" className="h-8" />
+
+                    {/* Actions */}
+                    <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={undo} disabled={historyIndex <= 0}>
+                            <RotateCcw className="h-4 w-4" />
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={redo} disabled={historyIndex >= history.length - 1}>
+                            <Redo className="h-4 w-4" />
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={clearCanvas}>
+                            Effacer
+                        </Button>
+                    </div>
+                </div>
+
+                {/* Palette de couleurs */}
+                <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                        <Palette className="h-4 w-4" />
+                        <span className="text-sm font-medium">Couleurs:</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
                         {colors.map((c) => (
                             <button
                                 key={c}
-                                className={`w-8 h-8 rounded-full border-2 ${color === c ? "border-primary" : "border-gray-300"}`}
+                                className={`w-8 h-8 rounded border-2 transition-all ${
+                                    color === c ? "border-gray-800 scale-110" : "border-gray-300"
+                                }`}
                                 style={{ backgroundColor: c }}
                                 onClick={() => setColor(c)}
                             />
                         ))}
                         <input
                             type="color"
-                            value={customColor}
-                            onChange={(e) => {
-                                setCustomColor(e.target.value)
-                                setColor(e.target.value)
-                            }}
-                            className="w-8 h-8 rounded-full border-2 border-gray-300 cursor-pointer"
+                            value={color}
+                            onChange={(e) => setColor(e.target.value)}
+                            className="w-8 h-8 rounded border-2 border-gray-300 cursor-pointer"
                         />
-                    </div>
-
-                    <Separator orientation="vertical" className="h-8" />
-
-                    {/* Brush Size */}
-                    <div className="flex items-center gap-2 min-w-[120px]">
-                        <span className="text-sm">Taille:</span>
-                        <Slider
-                            value={[brushSize]}
-                            onValueChange={(value) => setBrushSize(value[0])}
-                            max={50}
-                            min={1}
-                            step={1}
-                            className="flex-1"
-                        />
-                        <Badge variant="outline">{brushSize}px</Badge>
                     </div>
                 </div>
 
-                {/* Canvas Size & Actions */}
-                <div className="flex flex-wrap gap-4 items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">Taille du canvas:</span>
-                        <Select value={canvasSize} onValueChange={(value: CanvasSize) => setCanvasSize(value)}>
-                            <SelectTrigger className="w-32">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {Object.entries(canvasSizes).map(([key, size]) => (
-                                    <SelectItem key={key} value={key}>
-                                        {size.label}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-
+                {/* Taille du canvas */}
+                <div className="space-y-2">
+                    <span className="text-sm font-medium">Taille du canvas:</span>
                     <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={undo} disabled={historyIndex <= 0}>
-                            <Undo className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={redo} disabled={historyIndex >= history.length - 1}>
-                            <Redo className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={clearCanvas}>
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => downloadCanvas("png")}>
-                            <Download className="h-4 w-4" />
-                            PNG
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => downloadCanvas("jpg")}>
-                            <Download className="h-4 w-4" />
-                            JPG
-                        </Button>
+                        {canvasSizes.map((size) => (
+                            <Button
+                                key={size.label}
+                                variant={canvasSize.width === size.width && canvasSize.height === size.height ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => setCanvasSize({ width: size.width, height: size.height })}
+                            >
+                                {size.label}
+                            </Button>
+                        ))}
                     </div>
                 </div>
 
                 {/* Canvas */}
-                <div className="flex justify-center">
-                    <div className="border-2 border-gray-300 rounded-lg overflow-hidden shadow-lg">
-                        <canvas
-                            ref={canvasRef}
-                            width={currentSize.width}
-                            height={currentSize.height}
-                            className="cursor-crosshair max-w-full h-auto"
-                            onMouseDown={startDrawing}
-                            onMouseMove={draw}
-                            onMouseUp={stopDrawing}
-                            onMouseLeave={stopDrawing}
-                        />
-                    </div>
+                <div className="border-2 border-gray-200 rounded-lg overflow-hidden bg-white">
+                    <canvas
+                        ref={canvasRef}
+                        width={canvasSize.width}
+                        height={canvasSize.height}
+                        className="max-w-full h-auto cursor-crosshair"
+                        onMouseDown={startDrawing}
+                        onMouseMove={draw}
+                        onMouseUp={stopDrawing}
+                        onMouseLeave={stopDrawing}
+                    />
                 </div>
 
-                <div className="text-center text-sm text-muted-foreground">
-                    Outil actuel: <Badge variant="secondary">{tool}</Badge> | Couleur:{" "}
-                    <span className="inline-block w-4 h-4 rounded-full border ml-1" style={{ backgroundColor: color }} /> |
-                    Taille: {brushSize}px
+                {/* Export */}
+                <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => downloadCanvas("png")} className="flex items-center gap-2">
+                        <Download className="h-4 w-4" />
+                        PNG
+                    </Button>
+                    <Button variant="outline" onClick={() => downloadCanvas("jpg")} className="flex items-center gap-2">
+                        <Download className="h-4 w-4" />
+                        JPG
+                    </Button>
+                </div>
+
+                {/* Informations */}
+                <div className="text-sm text-muted-foreground">
+                    <p>
+                        Canvas: {canvasSize.width} × {canvasSize.height}px
+                    </p>
+                    <p>
+                        Outil actuel: {tool} • Taille: {brushSize}px • Couleur: {color}
+                    </p>
                 </div>
             </CardContent>
         </Card>
