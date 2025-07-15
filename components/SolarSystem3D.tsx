@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-
 import * as THREE from "three"
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer"
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass"
@@ -11,7 +10,6 @@ import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ExternalLink } from "lucide-react"
-// import { motion } from "framer-motion"
 
 // Définition des planètes et leurs propriétés
 interface Planet {
@@ -32,6 +30,279 @@ interface Planet {
   moons?: { distance: number; radius: number; color: string }[]
 }
 
+// Données des constellations
+const constellationData = [
+  {
+    name: "Orion",
+    positions: [
+      [-150, 30, -180],
+      [-140, 50, -190],
+      [-130, 70, -200],
+      [-160, 60, -210],
+      [-170, 40, -220],
+      [-120, 20, -230],
+      [-110, 0, -240],
+    ],
+    size: 2.0,
+    color: [1.0, 0.9, 0.8],
+  },
+  {
+    name: "Cassiopée",
+    positions: [
+      [50, 100, -150],
+      [70, 110, -160],
+      [90, 100, -170],
+      [110, 120, -180],
+      [130, 110, -190],
+    ],
+    size: 1.7,
+    color: [0.8, 0.8, 1.0],
+  },
+  {
+    name: "Scorpion",
+    positions: [
+      [-80, -50, 200],
+      [-60, -60, 210],
+      [-40, -65, 220],
+      [-20, -70, 230],
+      [0, -80, 240],
+      [20, -90, 250],
+      [40, -100, 260],
+      [60, -110, 270],
+      [80, -105, 280],
+      [100, -95, 290],
+    ],
+    size: 1.9,
+    color: [1.0, 0.7, 0.7],
+  },
+  {
+    name: "Taureau",
+    positions: [
+      [180, 20, 150],
+      [190, 30, 160],
+      [200, 40, 170],
+      [210, 30, 180],
+      [220, 20, 190],
+      [230, 10, 200],
+      [240, 0, 210],
+    ],
+    size: 1.8,
+    color: [0.9, 0.8, 0.6],
+  },
+  {
+    name: "Cygne",
+    positions: [
+      [0, 150, 180],
+      [20, 160, 190],
+      [40, 170, 200],
+      [60, 180, 210],
+      [80, 190, 220],
+      [40, 170, 200],
+      [40, 150, 200],
+      [40, 130, 200],
+    ],
+    size: 1.7,
+    color: [0.8, 0.9, 1.0],
+  },
+  {
+    name: "Sagittaire",
+    positions: [
+      [-200, -30, 100],
+      [-190, -40, 110],
+      [-180, -50, 120],
+      [-170, -40, 130],
+      [-160, -30, 140],
+      [-170, -20, 150],
+      [-180, -10, 160],
+      [-170, -40, 130],
+      [-160, -50, 120],
+      [-150, -60, 110],
+    ],
+    size: 1.6,
+    color: [1.0, 0.8, 0.6],
+  },
+  {
+    name: "Lion",
+    positions: [
+      [150, 30, 100],
+      [170, 40, 110],
+      [190, 35, 120],
+      [210, 30, 130],
+      [230, 25, 140],
+      [210, 30, 130],
+      [200, 10, 135],
+      [190, -10, 140],
+      [210, 30, 130],
+      [200, 50, 135],
+      [190, 70, 140],
+    ],
+    size: 1.7,
+    color: [0.9, 0.8, 0.7],
+  },
+  {
+    name: "Poissons",
+    positions: [
+      [-100, -20, -150],
+      [-90, -30, -160],
+      [-80, -40, -170],
+      [-70, -50, -180],
+      [-60, -60, -190],
+      [-50, -70, -200],
+      [-40, -60, -210],
+      [-30, -50, -220],
+      [-20, -40, -230],
+      [-10, -30, -240],
+    ],
+    size: 1.5,
+    color: [0.7, 0.8, 0.9],
+  },
+  {
+    name: "Gémeaux",
+    positions: [
+      [0, 80, -180],
+      [10, 90, -170],
+      [20, 100, -160],
+      [30, 110, -150],
+      [20, 100, -160],
+      [10, 110, -170],
+      [0, 120, -180],
+      [-10, 110, -190],
+      [-20, 100, -200],
+      [-10, 110, -190],
+      [0, 120, -180],
+    ],
+    size: 1.6,
+    color: [0.8, 0.9, 0.8],
+  },
+  {
+    name: "Croix du Sud",
+    positions: [
+      [0, -120, -100],
+      [0, -140, -100],
+      [0, -160, -100],
+      [0, -140, -100],
+      [-10, -140, -100],
+      [10, -140, -100],
+    ],
+    size: 2.2,
+    color: [1.0, 0.9, 0.9],
+  },
+  {
+    name: "Andromède",
+    positions: [
+      [100, 120, 100],
+      [110, 130, 110],
+      [120, 140, 120],
+      [130, 150, 130],
+      [140, 160, 140],
+      [150, 170, 150],
+      [160, 180, 160],
+    ],
+    size: 1.7,
+    color: [0.9, 0.7, 0.9],
+  },
+  {
+    name: "Bélier",
+    positions: [
+      [-200, 100, -100],
+      [-180, 120, -120],
+      [-160, 130, -140],
+      [-140, 125, -160],
+      [-120, 110, -180],
+      [-100, 95, -200],
+    ],
+    size: 1.6,
+    color: [1.0, 0.8, 0.6],
+  },
+  {
+    name: "Cancer",
+    positions: [
+      [50, 50, 50],
+      [70, 60, 70],
+      [90, 55, 90],
+      [110, 65, 110],
+      [130, 60, 130],
+    ],
+    size: 1.5,
+    color: [0.7, 0.9, 1.0],
+  },
+  {
+    name: "Vierge",
+    positions: [
+      [100, 0, -100],
+      [120, 10, -110],
+      [140, 20, -120],
+      [160, 10, -130],
+      [180, 0, -140],
+      [200, -10, -150],
+    ],
+    size: 1.7,
+    color: [0.9, 1.0, 0.8],
+  },
+  {
+    name: "Balance",
+    positions: [
+      [-100, 100, 100],
+      [-80, 110, 110],
+      [-60, 120, 120],
+      [-40, 110, 130],
+      [-20, 100, 140],
+    ],
+    size: 1.6,
+    color: [1.0, 0.9, 0.7],
+  },
+  {
+    name: "Capricorne",
+    positions: [
+      [100, -100, 100],
+      [110, -110, 110],
+      [120, -120, 120],
+      [130, -110, 130],
+      [140, -100, 140],
+    ],
+    size: 1.6,
+    color: [0.8, 0.7, 1.0],
+  },
+  {
+    name: "Verseau",
+    positions: [
+      [-100, 200, 0],
+      [-80, 210, 10],
+      [-60, 220, 20],
+      [-40, 210, 30],
+      [-20, 200, 40],
+    ],
+    size: 1.5,
+    color: [0.7, 0.8, 1.0],
+  },
+  {
+    name: "Grande Ourse",
+    positions: [
+      [-200, 200, -50],
+      [-180, 180, -40],
+      [-160, 160, -30],
+      [-140, 180, -20],
+      [-120, 200, -10],
+      [-100, 220, 0],
+      [-80, 240, 10],
+    ],
+    size: 2.2,
+    color: [0.9, 0.9, 1.0],
+  },
+  {
+    name: "Petite Ourse",
+    positions: [
+      [-150, 150, -30],
+      [-140, 140, -20],
+      [-130, 130, -10],
+      [-120, 140, 0],
+      [-110, 150, 10],
+    ],
+    size: 1.9,
+    color: [0.9, 0.9, 0.8],
+  },
+]
+
 export function SolarSystem3D() {
   const containerRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
@@ -50,15 +321,13 @@ export function SolarSystem3D() {
   const animationRef = useRef<number | null>(null)
   const initialCameraPositionRef = useRef<THREE.Vector3 | null>(null)
   const initialControlsTargetRef = useRef<THREE.Vector3 | null>(null)
-  // Stocker les vitesses orbitales originales des planètes
   const originalOrbitSpeedsRef = useRef<Map<THREE.Mesh, number>>(new Map())
-  // État pour suivre si les contrôles sont actifs
   const [controlsEnabled, setControlsEnabled] = useState(true)
 
   useEffect(() => {
     if (!containerRef.current) return
 
-    // Modifier la configuration des planètes pour ajouter des textures et améliorer le réalisme
+    // Configuration des planètes mise à jour
     const planets: Planet[] = [
       {
         name: "A propos",
@@ -67,10 +336,10 @@ export function SolarSystem3D() {
         distance: 10,
         rotationSpeed: 0.01,
         orbitSpeed: 0.005,
-        color: "#c0c0c0", // Gris argenté
+        color: "#c0c0c0",
         path: "/a-propos",
         description:
-          "Découvrez mon parcours, mes compétences et ma passion pour le développement web. Cette section présente mon profil professionnel et personnel.",
+            "Découvrez mon parcours, mes compétences et ma passion pour le développement web. Cette section présente mon profil professionnel et personnel.",
         diameter: "4 880 km",
         distanceFromSun: "57,9 millions km",
         orbitalPeriod: "88 jours",
@@ -83,10 +352,10 @@ export function SolarSystem3D() {
         distance: 16,
         rotationSpeed: 0.008,
         orbitSpeed: 0.003,
-        color: "#e39e54", // Jaune-orangé
+        color: "#e39e54",
         path: "/realisations",
         description:
-          "Explorez mon portfolio de projets et réalisations. Cette galerie présente mes travaux les plus significatifs et démontre mes compétences techniques.",
+            "Explorez mon portfolio de projets et réalisations. Cette galerie présente mes travaux les plus significatifs et démontre mes compétences techniques.",
         diameter: "12 104 km",
         distanceFromSun: "108,2 millions km",
         orbitalPeriod: "225 jours",
@@ -99,10 +368,10 @@ export function SolarSystem3D() {
         distance: 22,
         rotationSpeed: 0.012,
         orbitSpeed: 0.002,
-        color: "#4dabf7", // Bleu
+        color: "#4dabf7",
         path: "/veille",
         description:
-          "Ma veille technologique où je partage des articles, ressources et réflexions sur les dernières tendances du développement web et des technologies émergentes.",
+            "Ma veille technologique où je partage des articles, ressources et réflexions sur les dernières tendances du développement web et des technologies émergentes.",
         diameter: "12 756 km",
         distanceFromSun: "149,6 millions km",
         orbitalPeriod: "365,25 jours",
@@ -116,10 +385,10 @@ export function SolarSystem3D() {
         distance: 28,
         rotationSpeed: 0.009,
         orbitSpeed: 0.001,
-        color: "#fa5252", // Rouge
+        color: "#fa5252",
         path: "/contact",
         description:
-          "Entrez en contact avec moi pour discuter de collaborations, opportunités professionnelles ou simplement échanger sur des sujets techniques.",
+            "Entrez en contact avec moi pour discuter de collaborations, opportunités professionnelles ou simplement échanger sur des sujets techniques.",
         diameter: "6 792 km",
         distanceFromSun: "227,9 millions km",
         orbitalPeriod: "687 jours",
@@ -136,10 +405,10 @@ export function SolarSystem3D() {
         distance: 34,
         rotationSpeed: 0.015,
         orbitSpeed: 0.0008,
-        color: "#fcc419", // Jaune-brun
+        color: "#fcc419",
         path: "/laboratoire",
         description:
-          "Espace d'expérimentation où je teste de nouvelles idées, concepts et technologies avant de les intégrer dans mes projets principaux.",
+            "Espace d'expérimentation où je teste de nouvelles idées, concepts et technologies avant de les intégrer dans mes projets principaux.",
         diameter: "142 984 km",
         distanceFromSun: "778,5 millions km",
         orbitalPeriod: "11,86 ans",
@@ -158,10 +427,10 @@ export function SolarSystem3D() {
         distance: 42,
         rotationSpeed: 0.01,
         orbitSpeed: 0.0006,
-        color: "#e9d8a6", // Beige-doré
+        color: "#e9d8a6",
         path: "/test",
         description:
-          "Contenu supplémentaire et ressources diverses qui ne rentrent pas dans les autres catégories mais qui complètent mon univers numérique.",
+            "Contenu supplémentaire et ressources diverses qui ne rentrent pas dans les autres catégories mais qui complètent mon univers numérique.",
         diameter: "120 536 km",
         distanceFromSun: "1,4 milliard km",
         orbitalPeriod: "29,46 ans",
@@ -195,61 +464,47 @@ export function SolarSystem3D() {
     renderer.setSize(window.innerWidth, window.innerHeight)
     renderer.setClearColor(0x000000, 1)
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
-
-    // Stocker le renderer dans la référence
     rendererRef.current = renderer
 
-    // Ajouter le canvas au DOM
     if (containerRef.current) {
-      // Nettoyer le conteneur avant d'ajouter le nouveau canvas
       while (containerRef.current.firstChild) {
         containerRef.current.removeChild(containerRef.current.firstChild)
       }
       containerRef.current.appendChild(renderer.domElement)
-
-      // Ajouter des styles spécifiques au canvas
       renderer.domElement.style.touchAction = "none"
       renderer.domElement.style.outline = "none"
       renderer.domElement.style.display = "block"
     }
 
-    // Configuration du post-processing pour l'effet de bloom
+    // Post-processing setup
     const composer = new EffectComposer(renderer)
     const renderPass = new RenderPass(scene, camera)
     composer.addPass(renderPass)
 
-    // Ajouter un effet de bloom amélioré pour rendre les objets lumineux plus brillants
-    const bloomPass = new UnrealBloomPass(
-      new THREE.Vector2(window.innerWidth, window.innerHeight),
-      0.7, // strength - augmenté pour plus d'éclat
-      0.5, // radius - légèrement augmenté pour un halo plus large
-      0.75, // threshold - légèrement réduit pour capturer plus d'éléments
-    )
+    const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.7, 0.5, 0.75)
     composer.addPass(bloomPass)
 
-    // Modifier les paramètres des contrôles pour améliorer la rotation avec la souris
+    // Controls setup
     const controls = new OrbitControls(camera, renderer.domElement)
     controls.enableDamping = true
     controls.dampingFactor = 0.1
     controls.minDistance = 10
     controls.maxDistance = 200
-    controls.maxPolarAngle = Math.PI // Permettre une rotation verticale complète
-    controls.minPolarAngle = 0 // Permettre de passer au-dessus et en-dessous
+    controls.maxPolarAngle = Math.PI
+    controls.minPolarAngle = 0
     controls.autoRotate = false
     controls.enableRotate = true
-    controls.rotateSpeed = 0.5 // Réduire légèrement pour plus de précision
+    controls.rotateSpeed = 0.5
     controls.enableZoom = true
     controls.zoomSpeed = 1.0
     controls.enablePan = true
     controls.panSpeed = 0.8
     controls.screenSpacePanning = true
-    controls.target.set(0, 0, 0) // Cibler le centre du soleil
+    controls.target.set(0, 0, 0)
     initialControlsTargetRef.current = controls.target.clone()
     controlsRef.current = controls
 
-    // Ajouter des contrôles clavier pour se déplacer dans la direction de la caméra
-    // const keysPressed = { w: false, a: false, s: false, d: false, q: false, e: false }
-    // Ajouter des contrôles clavier pour se déplacer dans la direction de la caméra (configuration AZERTY)
+    // Keyboard controls
     const keysPressed = { z: false, q: false, s: false, d: false, a: false, e: false }
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -269,215 +524,26 @@ export function SolarSystem3D() {
     window.addEventListener("keydown", handleKeyDown)
     window.addEventListener("keyup", handleKeyUp)
 
-    // Modifier la fonction createStarfield pour augmenter le nombre d'étoiles:
-
-    // Ajouter une fonction pour créer des étoiles plus réalistes
+    // Fonction pour créer le champ d'étoiles avec constellations
     const createStarfield = () => {
-      const starCount = 3000 // Augmenté de 2000 à 3000 pour plus d'étoiles
+      const starCount = 3000
       const starGeometry = new THREE.BufferGeometry()
       const starPositions = new Float32Array(starCount * 3)
       const starSizes = new Float32Array(starCount)
       const starColors = new Float32Array(starCount * 3)
 
-      // Créer des constellations reconnaissables
-      const constellations = [
-        {
-          // Orion
-          name: "Orion",
-          positions: [
-            [-150, 30, -180],
-            [-140, 50, -190],
-            [-130, 70, -200],
-            [-160, 60, -210],
-            [-170, 40, -220],
-            [-120, 20, -230],
-            [-110, 0, -240],
-          ],
-          size: 2.0,
-          color: [1.0, 0.9, 0.8],
-        },
-        {
-          // Cassiopée
-          name: "Cassiopée",
-          positions: [
-            [50, 100, -150],
-            [70, 110, -160],
-            [90, 100, -170],
-            [110, 120, -180],
-            [130, 110, -190],
-          ],
-          size: 1.7,
-          color: [0.8, 0.8, 1.0],
-        },
-        {
-          // Scorpion
-          name: "Scorpion",
-          positions: [
-            [-80, -50, 200],
-            [-60, -60, 210],
-            [-40, -65, 220],
-            [-20, -70, 230],
-            [0, -80, 240],
-            [20, -90, 250],
-            [40, -100, 260],
-            [60, -110, 270],
-            [80, -105, 280],
-            [100, -95, 290],
-          ],
-          size: 1.9,
-          color: [1.0, 0.7, 0.7],
-        },
-        {
-          // Taureau
-          name: "Taureau",
-          positions: [
-            [180, 20, 150],
-            [190, 30, 160],
-            [200, 40, 170],
-            [210, 30, 180],
-            [220, 20, 190],
-            [230, 10, 200],
-            [240, 0, 210],
-          ],
-          size: 1.8,
-          color: [0.9, 0.8, 0.6],
-        },
-        {
-          // Cygne (Croix du Nord)
-          name: "Cygne",
-          positions: [
-            [0, 150, 180],
-            [20, 160, 190],
-            [40, 170, 200],
-            [60, 180, 210],
-            [80, 190, 220],
-            [40, 170, 200],
-            [40, 150, 200],
-            [40, 130, 200],
-          ],
-          size: 1.7,
-          color: [0.8, 0.9, 1.0],
-        },
-        {
-          // Sagittaire
-          name: "Sagittaire",
-          positions: [
-            [-200, -30, 100],
-            [-190, -40, 110],
-            [-180, -50, 120],
-            [-170, -40, 130],
-            [-160, -30, 140],
-            [-170, -20, 150],
-            [-180, -10, 160],
-            [-170, -40, 130],
-            [-160, -50, 120],
-            [-150, -60, 110],
-          ],
-          size: 1.6,
-          color: [1.0, 0.8, 0.6],
-        },
-        {
-          // Lion
-          name: "Lion",
-          positions: [
-            [150, 30, 100],
-            [170, 40, 110],
-            [190, 35, 120],
-            [210, 30, 130],
-            [230, 25, 140],
-            [210, 30, 130],
-            [200, 10, 135],
-            [190, -10, 140],
-            [210, 30, 130],
-            [200, 50, 135],
-            [190, 70, 140],
-          ],
-          size: 1.7,
-          color: [0.9, 0.8, 0.7],
-        },
-        {
-          // Poissons
-          name: "Poissons",
-          positions: [
-            [-100, -20, -150],
-            [-90, -30, -160],
-            [-80, -40, -170],
-            [-70, -50, -180],
-            [-60, -60, -190],
-            [-50, -70, -200],
-            [-40, -60, -210],
-            [-30, -50, -220],
-            [-20, -40, -230],
-            [-10, -30, -240],
-          ],
-          size: 1.5,
-          color: [0.7, 0.8, 0.9],
-        },
-        {
-          // Gémeaux
-          name: "Gémeaux",
-          positions: [
-            [0, 80, -180],
-            [10, 90, -170],
-            [20, 100, -160],
-            [30, 110, -150],
-            [20, 100, -160],
-            [10, 110, -170],
-            [0, 120, -180],
-            [-10, 110, -190],
-            [-20, 100, -200],
-            [-10, 110, -190],
-            [0, 120, -180],
-          ],
-          size: 1.6,
-          color: [0.8, 0.9, 0.8],
-        },
-        {
-          // Croix du Sud (plus petite mais brillante)
-          name: "Croix du Sud",
-          positions: [
-            [0, -120, -100],
-            [0, -140, -100],
-            [0, -160, -100],
-            [0, -140, -100],
-            [-10, -140, -100],
-            [10, -140, -100],
-          ],
-          size: 2.2,
-          color: [1.0, 0.9, 0.9],
-        },
-        {
-          // Andromède
-          name: "Andromède",
-          positions: [
-            [100, 120, 100],
-            [110, 130, 110],
-            [120, 140, 120],
-            [130, 150, 130],
-            [140, 160, 140],
-            [150, 170, 150],
-            [160, 180, 160],
-          ],
-          size: 1.7,
-          color: [0.9, 0.7, 0.9],
-        },
-      ]
-
-      // Ajouter les étoiles des constellations
+      // Ajouter d'abord les étoiles des constellations
       let posIndex = 0
-      constellations.forEach((constellation) => {
-        constellation.positions.forEach((pos) => {
+      constellationData.forEach((constel) => {
+        constel.positions.forEach(([x, y, z]) => {
           const i3 = posIndex * 3
-          starPositions[i3] = pos[0]
-          starPositions[i3 + 1] = pos[1]
-          starPositions[i3 + 2] = pos[2]
-
-          starSizes[posIndex] = constellation.size
-
-          starColors[i3] = constellation.color[0]
-          starColors[i3 + 1] = constellation.color[1]
-          starColors[i3 + 2] = constellation.color[2]
-
+          starPositions[i3] = x
+          starPositions[i3 + 1] = y
+          starPositions[i3 + 2] = z
+          starSizes[posIndex] = constel.size
+          starColors[i3] = constel.color[0]
+          starColors[i3 + 1] = constel.color[1]
+          starColors[i3 + 2] = constel.color[2]
           posIndex++
         })
       })
@@ -485,9 +551,7 @@ export function SolarSystem3D() {
       // Ajouter les étoiles aléatoires pour le reste
       for (let i = posIndex; i < starCount; i++) {
         const i3 = i * 3
-
-        // Créer une distribution plus uniforme sur une sphère céleste
-        const radius = Math.random() * 100 + 400 // Sphère céleste plus grande
+        const radius = Math.random() * 100 + 400
         const theta = Math.random() * Math.PI * 2
         const phi = Math.acos(Math.random() * 2 - 1)
 
@@ -495,28 +559,22 @@ export function SolarSystem3D() {
         starPositions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta)
         starPositions[i3 + 2] = radius * Math.cos(phi)
 
-        // Random star sizes with more variation
         starSizes[i] = Math.random() * 1.2 + 0.3
 
-        // Star colors (mostly white/blue with some variation)
         const colorChoice = Math.random()
         if (colorChoice > 0.95) {
-          // Red/orange stars (moins nombreuses)
           starColors[i3] = 0.8 + Math.random() * 0.2
           starColors[i3 + 1] = 0.3 + Math.random() * 0.3
           starColors[i3 + 2] = 0.2
         } else if (colorChoice > 0.85) {
-          // Yellow stars
           starColors[i3] = 0.8 + Math.random() * 0.2
           starColors[i3 + 1] = 0.8 + Math.random() * 0.2
           starColors[i3 + 2] = 0.3
         } else if (colorChoice > 0.7) {
-          // Blue stars
           starColors[i3] = 0.3 + Math.random() * 0.2
           starColors[i3 + 1] = 0.5 + Math.random() * 0.2
           starColors[i3 + 2] = 0.8 + Math.random() * 0.2
         } else {
-          // White/blue-ish stars
           starColors[i3] = 0.7 + Math.random() * 0.3
           starColors[i3 + 1] = 0.7 + Math.random() * 0.3
           starColors[i3 + 2] = 0.9 + Math.random() * 0.1
@@ -533,41 +591,38 @@ export function SolarSystem3D() {
           uTime: { value: 0 },
         },
         vertexShader: `
-    uniform float uPixelRatio;
-    uniform float uTime;
-    
-    attribute float size;
-    attribute vec3 color;
-    
-    varying vec3 vColor;
-    
-    void main() {
-      vColor = color;
-      
-      // Twinkling effect with multiple frequencies for more natural look
-      float twinkle = sin(uTime * 0.3 + position.x * 0.01 + position.y * 0.02 + position.z * 0.03) * 0.3 + 0.7;
-      twinkle *= sin(uTime * 0.2 + position.z * 0.04) * 0.2 + 0.8;
-      
-      vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-      gl_Position = projectionMatrix * mvPosition;
-      gl_PointSize = size * uPixelRatio * (300.0 / -mvPosition.z) * twinkle;
-    }
-  `,
+          uniform float uPixelRatio;
+          uniform float uTime;
+          
+          attribute float size;
+          attribute vec3 color;
+          
+          varying vec3 vColor;
+          
+          void main() {
+            vColor = color;
+            
+            float twinkle = sin(uTime * 0.3 + position.x * 0.01 + position.y * 0.02 + position.z * 0.03) * 0.3 + 0.7;
+            twinkle *= sin(uTime * 0.2 + position.z * 0.04) * 0.2 + 0.8;
+            
+            vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+            gl_Position = projectionMatrix * mvPosition;
+            gl_PointSize = size * uPixelRatio * (300.0 / -mvPosition.z) * twinkle;
+          }
+        `,
         fragmentShader: `
-    varying vec3 vColor;
-    
-    void main() {
-      // Create circular points with soft edges and subtle glow
-      float distanceToCenter = length(gl_PointCoord - 0.5);
-      float strength = 1.0 - smoothstep(0.0, 0.5, distanceToCenter);
-      
-      // Add subtle glow around stars
-      float glow = 1.0 - smoothstep(0.0, 1.0, distanceToCenter);
-      vec3 finalColor = mix(vColor * 0.5, vColor, strength);
-      
-      gl_FragColor = vec4(finalColor, glow * 0.8);
-    }
-  `,
+          varying vec3 vColor;
+          
+          void main() {
+            float distanceToCenter = length(gl_PointCoord - 0.5);
+            float strength = 1.0 - smoothstep(0.0, 0.5, distanceToCenter);
+            
+            float glow = 1.0 - smoothstep(0.0, 1.0, distanceToCenter);
+            vec3 finalColor = mix(vColor * 0.5, vColor, strength);
+            
+            gl_FragColor = vec4(finalColor, glow * 0.8);
+          }
+        `,
         transparent: true,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
@@ -576,176 +631,67 @@ export function SolarSystem3D() {
       const stars = new THREE.Points(starGeometry, starMaterial)
       scene.add(stars)
 
-      // Ajouter des lignes pour connecter les étoiles des constellations
-      constellations.forEach((constellation) => {
+      // Ajouter les lignes des constellations
+      constellationData.forEach((constellation) => {
         const positions = constellation.positions
-
-        // Créer les lignes entre les points consécutifs de la constellation
         for (let i = 0; i < positions.length - 1; i++) {
-          // Créer directement un tableau de points pour la ligne
           const points = [
             new THREE.Vector3(positions[i][0], positions[i][1], positions[i][2]),
             new THREE.Vector3(positions[i + 1][0], positions[i + 1][1], positions[i + 1][2]),
           ]
-
           const lineGeometry = new THREE.BufferGeometry().setFromPoints(points)
           const lineMaterial = new THREE.LineBasicMaterial({
             color: new THREE.Color(constellation.color[0], constellation.color[1], constellation.color[2]),
             transparent: true,
             opacity: 0.4,
-            linewidth: 1.5, // Note: linewidth n'est pas supporté par WebGL, mais gardé pour référence
           })
-
           const line = new THREE.Line(lineGeometry, lineMaterial)
           scene.add(line)
         }
 
-        // Ajouter un texte pour le nom de la constellation
+        // Ajouter le nom de la constellation
         if (constellation.positions.length > 0) {
-          // Calculer le centre approximatif de la constellation
           const centerPos = constellation.positions[Math.floor(constellation.positions.length / 2)]
-
-          // Créer un sprite pour le texte
           const canvas = document.createElement("canvas")
           canvas.width = 256
           canvas.height = 128
           const context = canvas.getContext("2d")
-
           if (context) {
             context.fillStyle = "rgba(0, 0, 0, 0)"
             context.fillRect(0, 0, canvas.width, canvas.height)
-
-            // Dessiner le texte
             context.font = "Bold 24px Arial"
             context.fillStyle = `rgba(${constellation.color[0] * 255}, ${constellation.color[1] * 255}, ${constellation.color[2] * 255}, 0.8)`
             context.textAlign = "center"
             context.fillText(constellation.name, canvas.width / 2, canvas.height / 2)
 
-            // Créer une texture à partir du canvas
             const texture = new THREE.CanvasTexture(canvas)
             const material = new THREE.SpriteMaterial({
               map: texture,
               transparent: true,
               depthTest: false,
             })
-
             const sprite = new THREE.Sprite(material)
-            sprite.position.set(centerPos[0], centerPos[1] + 10, centerPos[2]) // Positionner au-dessus de la constellation
-            sprite.scale.set(40, 20, 1) // Ajuster la taille
+            sprite.position.set(centerPos[0], centerPos[1] + 10, centerPos[2])
+            sprite.scale.set(40, 20, 1)
             scene.add(sprite)
           }
         }
       })
 
-      // Ajouter des étoiles lointaines supplémentaires
-      const distantStarCount = 2000
-      const distantStarGeometry = new THREE.BufferGeometry()
-      const distantStarPositions = new Float32Array(distantStarCount * 3)
-      const distantStarSizes = new Float32Array(distantStarCount)
-      const distantStarColors = new Float32Array(distantStarCount * 3)
-
-      for (let i = 0; i < distantStarCount; i++) {
-        const i3 = i * 3
-
-        // Placer ces étoiles sur une sphère très lointaine
-        const radius = 800 + Math.random() * 200
-        const theta = Math.random() * Math.PI * 2
-        const phi = Math.acos(Math.random() * 2 - 1)
-
-        distantStarPositions[i3] = radius * Math.sin(phi) * Math.cos(theta)
-        distantStarPositions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta)
-        distantStarPositions[i3 + 2] = radius * Math.cos(phi)
-
-        // Ces étoiles sont plus petites
-        distantStarSizes[i] = Math.random() * 0.3 + 0.1
-
-        // Couleurs principalement blanc/bleu mais plus subtiles
-        const colorVariant = Math.random()
-        distantStarColors[i3] = 0.7 + colorVariant * 0.3
-        distantStarColors[i3 + 1] = 0.7 + colorVariant * 0.3
-        distantStarColors[i3 + 2] = 0.8 + colorVariant * 0.2
-      }
-
-      distantStarGeometry.setAttribute("position", new THREE.BufferAttribute(distantStarPositions, 3))
-      distantStarGeometry.setAttribute("size", new THREE.BufferAttribute(distantStarSizes, 1))
-      distantStarGeometry.setAttribute("color", new THREE.BufferAttribute(distantStarColors, 3))
-
-      const distantStarMaterial = new THREE.ShaderMaterial({
-        uniforms: {
-          uPixelRatio: { value: Math.min(window.devicePixelRatio, 1.5) },
-          uTime: { value: 0 },
-        },
-        vertexShader: `
-      uniform float uPixelRatio;
-      uniform float uTime;
-      
-      attribute float size;
-      attribute vec3 color;
-      
-      varying vec3 vColor;
-      
-      void main() {
-        vColor = color;
-        
-        // Un scintillement très subtil
-        float twinkle = sin(uTime * 0.1 + position.x * 0.01 + position.z * 0.01) * 0.1 + 0.9;
-        
-        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_Position = projectionMatrix * mvPosition;
-        gl_PointSize = size * uPixelRatio * (900.0 / -mvPosition.z) * twinkle;
-      }
-    `,
-        fragmentShader: `
-      varying vec3 vColor;
-      
-      void main() {
-        float distanceToCenter = length(gl_PointCoord - 0.5);
-        float strength = 1.0 - smoothstep(0.0, 0.5, distanceToCenter);
-        
-        gl_FragColor = vec4(vColor, strength * 0.6);
-      }
-    `,
-        transparent: true,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-      })
-
-      const distantStars = new THREE.Points(distantStarGeometry, distantStarMaterial)
-      scene.add(distantStars)
-
-      // Objet vide pour maintenir la compatibilité avec le reste du code
-      const celestialMaterial = {
-        uniforms: { uTime: { value: 0 } },
-      }
-      const celestialSphere = null
-
-      return {
-        stars,
-        material: starMaterial,
-        celestialSphere,
-        celestialMaterial,
-        distantStars,
-        distantStarMaterial,
-      }
+      return { stars, material: starMaterial }
     }
 
-    // Après la fonction createStarfield, ajouter cette nouvelle fonction pour créer des météorites
-
-    // Ajouter cette fonction après la fonction createStarfield
+    // Créer les météorites
     const createMeteors = () => {
       const meteorGroup = new THREE.Group()
       scene.add(meteorGroup)
-
-      // Nombre de météorites
       const meteorCount = 75
-      const meteorsData = []
+      const meteorsData: any[] = []
 
       for (let i = 0; i < meteorCount; i++) {
-        // Créer une géométrie pour la météorite avec une taille plus variée
         const size = Math.random() * 2.5 + 0.3
         const meteorGeometry = new THREE.IcosahedronGeometry(size, 0)
 
-        // Déformer légèrement la géométrie pour un aspect plus naturel
         const positions = meteorGeometry.attributes.position.array
         for (let j = 0; j < positions.length; j += 3) {
           positions[j] += (Math.random() - 0.5) * 0.2
@@ -754,7 +700,6 @@ export function SolarSystem3D() {
         }
         meteorGeometry.computeVertexNormals()
 
-        // Créer un matériau pour la météorite
         const meteorMaterial = new THREE.MeshStandardMaterial({
           color: 0xaaaaaa,
           roughness: 0.8,
@@ -764,7 +709,6 @@ export function SolarSystem3D() {
 
         const meteor = new THREE.Mesh(meteorGeometry, meteorMaterial)
 
-        // Positionner la météorite aléatoirement dans l'espace
         const radius = Math.random() * 300 + 200
         const theta = Math.random() * Math.PI * 2
         const phi = Math.acos(Math.random() * 2 - 1)
@@ -773,7 +717,7 @@ export function SolarSystem3D() {
         meteor.position.y = radius * Math.sin(phi) * Math.sin(theta)
         meteor.position.z = radius * Math.cos(phi)
 
-        // Créer une traînée pour la météorite
+        // Créer la traînée
         const trailGeometry = new THREE.BufferGeometry()
         const trailMaterial = new THREE.ShaderMaterial({
           uniforms: {
@@ -781,39 +725,33 @@ export function SolarSystem3D() {
             uColor: { value: new THREE.Color(0x88ccff) },
           },
           vertexShader: `
-        uniform float uTime;
-        
-        attribute float size;
-        attribute float opacity;
-        
-        varying float vOpacity;
-        
-        void main() {
-          vOpacity = opacity;
-          
-          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-          gl_Position = projectionMatrix * mvPosition;
-          gl_PointSize = size * (300.0 / -mvPosition.z);
-        }
-      `,
+            uniform float uTime;
+            attribute float size;
+            attribute float opacity;
+            varying float vOpacity;
+            
+            void main() {
+              vOpacity = opacity;
+              vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+              gl_Position = projectionMatrix * mvPosition;
+              gl_PointSize = size * (300.0 / -mvPosition.z);
+            }
+          `,
           fragmentShader: `
-        uniform vec3 uColor;
-        
-        varying float vOpacity;
-        
-        void main() {
-          float distanceToCenter = length(gl_PointCoord - 0.5);
-          float strength = 1.0 - smoothstep(0.0, 0.5, distanceToCenter);
-          
-          gl_FragColor = vec4(uColor, strength * vOpacity);
-        }
-      `,
+            uniform vec3 uColor;
+            varying float vOpacity;
+            
+            void main() {
+              float distanceToCenter = length(gl_PointCoord - 0.5);
+              float strength = 1.0 - smoothstep(0.0, 0.5, distanceToCenter);
+              gl_FragColor = vec4(uColor, strength * vOpacity);
+            }
+          `,
           transparent: true,
           blending: THREE.AdditiveBlending,
           depthWrite: false,
         })
 
-        // Créer les points pour la traînée
         const trailLength = 25
         const trailPositions = new Float32Array(trailLength * 3)
         const trailSizes = new Float32Array(trailLength)
@@ -823,7 +761,6 @@ export function SolarSystem3D() {
           trailPositions[j * 3] = meteor.position.x
           trailPositions[j * 3 + 1] = meteor.position.y
           trailPositions[j * 3 + 2] = meteor.position.z
-
           trailSizes[j] = (1 - j / trailLength) * 3.5 + 1.0
           trailOpacities[j] = (1 - j / trailLength) * 0.7
         }
@@ -834,20 +771,17 @@ export function SolarSystem3D() {
 
         const trail = new THREE.Points(trailGeometry, trailMaterial)
         meteorGroup.add(trail)
-
-        // Ajouter la météorite au groupe
         meteorGroup.add(meteor)
 
-        // Stocker les données pour l'animation
         meteorsData.push({
           meteor,
           trail,
           trailPositions,
           trailGeometry,
           direction: new THREE.Vector3(
-            (Math.random() - 0.5) * 0.3,
-            (Math.random() - 0.5) * 0.3,
-            (Math.random() - 0.5) * 0.3,
+              (Math.random() - 0.5) * 0.3,
+              (Math.random() - 0.5) * 0.3,
+              (Math.random() - 0.5) * 0.3,
           ).normalize(),
           speed: Math.random() * 0.5 + 0.2,
           rotationSpeed: {
@@ -863,58 +797,39 @@ export function SolarSystem3D() {
     }
 
     const { meteorGroup, meteorsData } = createMeteors()
+    const { stars, material: starMaterial } = createStarfield()
 
-    const {
-      stars,
-      material: starMaterial,
-      celestialSphere,
-      celestialMaterial,
-      distantStars,
-      distantStarMaterial,
-    } = createStarfield()
-
-    // Create sun
+    // Créer le soleil
     const createSun = () => {
-      // Créer une texture pour le soleil avec des détails de surface
-      const sunTexture = new THREE.TextureLoader().load("/textures/sun.jpg")
-
+      const sunTexture = new THREE.TextureLoader().load("/placeholder.svg?height=512&width=512")
       const sunGeometry = new THREE.SphereGeometry(5, 64, 64)
       const sunMaterial = new THREE.MeshStandardMaterial({
         map: sunTexture,
-        emissive: 0xcc6600, // Couleur d'émission plus foncée (orange-rouge au lieu de orange vif)
-        emissiveIntensity: 0.6, // Intensité d'émission réduite de 1 à 0.6
-        roughness: 0.8, // Augmenter la rugosité pour réduire les reflets
-        metalness: 0.2, // Réduire légèrement le métal
+        emissive: 0xcc6600,
+        emissiveIntensity: 0.6,
+        roughness: 0.8,
+        metalness: 0.2,
       })
 
       const sun = new THREE.Mesh(sunGeometry, sunMaterial)
-
-      // Ajouter une légère inclinaison à l'axe de rotation du soleil
       sun.rotation.x = 0.1
-
-      // Stocker la vitesse de rotation dans userData
-      sun.userData = {
-        rotationSpeed: 0.002, // Vitesse de rotation lente
-      }
-
+      sun.userData = { rotationSpeed: 0.002 }
       scene.add(sun)
 
-      // Retourner seulement le soleil sans l'aura
-      return { sun, sunMaterial, glow: null, glowMaterial: null }
+      return { sun, sunMaterial }
     }
 
-    const { sun, sunMaterial, glow, glowMaterial } = createSun()
+    const { sun, sunMaterial } = createSun()
 
-    // Create orbit lines
+    // Créer les orbites
     const createOrbitLines = () => {
       const orbitLines: THREE.Line[] = []
-
       planets.forEach((planet) => {
         const orbitGeometry = new THREE.BufferGeometry()
         const orbitMaterial = new THREE.LineBasicMaterial({
-          color: new THREE.Color(planet.color).multiplyScalar(0.5), // Utiliser la couleur de la planète
+          color: new THREE.Color(planet.color).multiplyScalar(0.5),
           transparent: true,
-          opacity: 0.4, // Augmenter légèrement l'opacité
+          opacity: 0.4,
         })
 
         const vertices = []
@@ -935,24 +850,24 @@ export function SolarSystem3D() {
 
     const orbitLines = createOrbitLines()
 
-    // Create planets
+    // Créer les planètes
     const createPlanets = () => {
       const planetMeshes: THREE.Mesh[] = []
       const textureLoader = new THREE.TextureLoader()
 
-      planets.forEach((planet, index) => {
-        // Create planet with realistic textures
+      planets.forEach((planet) => {
         const planetGeometry = new THREE.SphereGeometry(planet.radius, 32, 32)
-
         let planetMaterial
 
         if (planet.texture) {
-          const texture = textureLoader.load(planet.texture)
+          const texture = textureLoader.load(
+              `/placeholder.svg?height=512&width=512&query=${planet.solarName}+planet+texture`,
+          )
           planetMaterial = new THREE.MeshStandardMaterial({
             map: texture,
-            roughness: 0.5, // Réduire la rugosité pour plus de brillance
-            metalness: 0.2, // Augmenter légèrement le métal pour plus de réflexion
-            emissive: new THREE.Color(0x222222), // Ajouter une légère émission pour plus de luminosité
+            roughness: 0.5,
+            metalness: 0.2,
+            emissive: new THREE.Color(0x222222),
             emissiveIntensity: 0.2,
           })
         } else {
@@ -966,92 +881,72 @@ export function SolarSystem3D() {
         }
 
         const planetMesh = new THREE.Mesh(planetGeometry, planetMaterial)
-
-        // Position planet on its orbit
         const angle = Math.random() * Math.PI * 2
         planetMesh.position.x = planet.distance * Math.cos(angle)
         planetMesh.position.z = planet.distance * Math.sin(angle)
-
-        // Add slight tilt to rotation axis (like real planets)
         planetMesh.rotation.x = Math.random() * 0.4 - 0.2
 
-        // Add planet to scene
         scene.add(planetMesh)
         planetMeshes.push(planetMesh)
 
-        // Ajouter une étiquette avec le nom de la page au-dessus de la planète
+        // Créer l'étiquette
         const createLabelSprite = (text: string, color: string, size = 1.2) => {
           const canvas = document.createElement("canvas")
           canvas.width = 256
           canvas.height = 128
           const context = canvas.getContext("2d")
-
           if (context) {
             context.fillStyle = "rgba(0, 0, 0, 0)"
             context.fillRect(0, 0, canvas.width, canvas.height)
-
-            // Dessiner le texte
             context.font = "Bold 36px Arial"
             context.fillStyle = color
             context.textAlign = "center"
             context.textBaseline = "middle"
             context.fillText(text, canvas.width / 2, canvas.height / 2)
 
-            // Créer une texture à partir du canvas
             const texture = new THREE.CanvasTexture(canvas)
             const material = new THREE.SpriteMaterial({
               map: texture,
               transparent: true,
               depthTest: false,
             })
-
             const sprite = new THREE.Sprite(material)
             sprite.scale.set(size * 5, size * 2.5, 1)
-
             return sprite
           }
-
           return null
         }
 
-        // Créer l'étiquette avec le nom de la page
         const label = createLabelSprite(planet.name, planet.color)
         if (label) {
-          // Positionner l'étiquette au-dessus de la planète
           label.position.y = planet.radius * 2.5
-
-          // Ajouter l'étiquette comme enfant de la planète pour qu'elle suive ses mouvements
           planetMesh.add(label)
         }
 
-        // Add rings if needed with improved realism
+        // Ajouter les anneaux si nécessaire
         if (planet.rings) {
-          // Créer une texture claire pour les anneaux de Saturne
           const ringGeometry = new THREE.RingGeometry(planet.radius * 1.4, planet.radius * 2.4, 64)
           const ringMaterial = new THREE.MeshStandardMaterial({
-            color: 0xf0e9d2, // Couleur beige clair pour les anneaux
+            color: 0xf0e9d2,
             side: THREE.DoubleSide,
             transparent: true,
             opacity: 0.9,
             roughness: 0.6,
             metalness: 0.2,
-            emissive: 0xf0e9d2, // Ajouter une émission pour plus de visibilité
+            emissive: 0xf0e9d2,
             emissiveIntensity: 0.2,
           })
 
           const ring = new THREE.Mesh(ringGeometry, ringMaterial)
-          ring.rotation.x = Math.PI / 2 + 0.2 // Légère inclinaison
+          ring.rotation.x = Math.PI / 2 + 0.2
           planetMesh.add(ring)
         }
 
-        // Add moons if needed with improved realism
+        // Ajouter les lunes si nécessaire
         if (planet.moons) {
           planet.moons.forEach((moon, moonIndex) => {
             const moonGeometry = new THREE.SphereGeometry(moon.radius, 16, 16)
-
-            // Charger une texture de lune
-            const moonTexture = textureLoader.load("/textures/moon.jpg")
-
+            const moonTexture = textureLoader.load("/placeholder.svg?height=256&width=256")
             const moonMaterial = new THREE.MeshStandardMaterial({
               map: moonTexture,
               roughness: 0.6,
@@ -1061,21 +956,14 @@ export function SolarSystem3D() {
             })
 
             const moonMesh = new THREE.Mesh(moonGeometry, moonMaterial)
-
-            // Créer un groupe pour l'orbite de la lune
             const moonOrbit = new THREE.Group()
             planetMesh.add(moonOrbit)
 
-            // Positionner la lune
             moonMesh.position.x = moon.distance
-
-            // Incliner légèrement l'orbite de la lune
             moonOrbit.rotation.y = (moonIndex * Math.PI) / 4
             moonOrbit.rotation.x = moonIndex * 0.2
-
             moonOrbit.add(moonMesh)
 
-            // Stocker les données pour l'animation
             moonMesh.userData = {
               orbitSpeed: 0.02 + moonIndex * 0.005,
               rotationSpeed: 0.01,
@@ -1083,7 +971,7 @@ export function SolarSystem3D() {
           })
         }
 
-        // Ajouter un effet de halo lumineux autour de la planète (réduit)
+        // Ajouter l'effet de halo
         const glowGeometry = new THREE.SphereGeometry(planet.radius * 1.15, 32, 32)
         const glowMaterial = new THREE.ShaderMaterial({
           uniforms: {
@@ -1092,22 +980,22 @@ export function SolarSystem3D() {
             glowColor: { value: new THREE.Color(planet.color) },
           },
           vertexShader: `
-          varying vec3 vNormal;
-          void main() {
-            vNormal = normalize(normalMatrix * normal);
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-          }
-        `,
+            varying vec3 vNormal;
+            void main() {
+              vNormal = normalize(normalMatrix * normal);
+              gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+          `,
           fragmentShader: `
-          uniform vec3 glowColor;
-          uniform float c;
-          uniform float p;
-          varying vec3 vNormal;
-          void main() {
-            float intensity = pow(c - dot(vNormal, vec3(0.0, 0.0, 1.0)), p);
-            gl_FragColor = vec4(glowColor, intensity * 0.3); // Réduit pour moins éblouir
-          }
-        `,
+            uniform vec3 glowColor;
+            uniform float c;
+            uniform float p;
+            varying vec3 vNormal;
+            void main() {
+              float intensity = pow(c - dot(vNormal, vec3(0.0, 0.0, 1.0)), p);
+              gl_FragColor = vec4(glowColor, intensity * 0.3);
+            }
+          `,
           transparent: true,
           blending: THREE.AdditiveBlending,
           side: THREE.BackSide,
@@ -1117,7 +1005,6 @@ export function SolarSystem3D() {
         const glow = new THREE.Mesh(glowGeometry, glowMaterial)
         planetMesh.add(glow)
 
-        // Store initial position for animation
         planetMesh.userData = {
           orbitAngle: angle,
           orbitSpeed: planet.orbitSpeed,
@@ -1126,10 +1013,9 @@ export function SolarSystem3D() {
           solarName: planet.solarName,
           path: planet.path,
           radius: planet.radius,
-          planetData: planet, // Stocker toutes les données de la planète
+          planetData: planet,
         }
 
-        // Stocker la vitesse orbitale originale
         originalOrbitSpeedsRef.current.set(planetMesh, planet.orbitSpeed)
       })
 
@@ -1139,26 +1025,21 @@ export function SolarSystem3D() {
     const planetMeshes = createPlanets()
     planetsRef.current = planetMeshes
 
-    // Modifier la configuration de l'éclairage pour un rendu plus réaliste
-    // Modifier la configuration de l'éclairage pour un rendu plus lumineux
-    // Add ambient light with increased intensity
-    const ambientLight = new THREE.AmbientLight(0x555555) // Augmenter l'intensité pour éclairer davantage les planètes
+    // Éclairage
+    const ambientLight = new THREE.AmbientLight(0x555555)
     scene.add(ambientLight)
 
-    // Add point light at sun position with improved settings
-    const sunLight = new THREE.PointLight(0xffffff, 3, 150, 1) // Augmenter l'intensité et la portée
+    const sunLight = new THREE.PointLight(0xffffff, 3, 150, 1)
     scene.add(sunLight)
 
-    // Ajouter une lumière directionnelle pour mieux éclairer les planètes
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1)
     directionalLight.position.set(1, 1, 1)
     scene.add(directionalLight)
 
-    // Ajouter une lumière hémisphérique pour un éclairage plus naturel
-    const hemisphereLight = new THREE.HemisphereLight(0xffffbb, 0x080820, 1) // Augmenter l'intensité
+    const hemisphereLight = new THREE.HemisphereLight(0xffffbb, 0x080820, 1)
     scene.add(hemisphereLight)
 
-    // Handle window resize
+    // Gestionnaires d'événements
     const handleResize = () => {
       if (!cameraRef.current || !rendererRef.current) return
 
@@ -1167,159 +1048,110 @@ export function SolarSystem3D() {
       rendererRef.current.setSize(window.innerWidth, window.innerHeight)
       rendererRef.current.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
 
-      // Mettre à jour la taille du composer
       composer.setSize(window.innerWidth, window.innerHeight)
 
       if (starMaterial.uniforms) {
         starMaterial.uniforms.uPixelRatio.value = Math.min(window.devicePixelRatio, 1.5)
       }
-      if (distantStarMaterial && distantStarMaterial.uniforms) {
-        distantStarMaterial.uniforms.uPixelRatio.value = Math.min(window.devicePixelRatio, 1.5)
-      }
-      if (celestialMaterial && celestialMaterial.uniforms) {
-        celestialMaterial.uniforms.uTime.value = clock.getElapsedTime()
-      }
     }
 
-    window.addEventListener("resize", handleResize)
-
-    // Handle mouse move for raycasting
     const handleMouseMove = (event: MouseEvent) => {
-      // Calculate mouse position in normalized device coordinates (-1 to +1)
       mouseRef.current.x = (event.clientX / window.innerWidth) * 2 - 1
       mouseRef.current.y = -(event.clientY / window.innerHeight) * 2 + 1
-
-      // Update tooltip position
       setTooltipPosition({ x: event.clientX, y: event.clientY })
     }
 
-    window.addEventListener("mousemove", handleMouseMove)
-
-    // Empêcher les événements par défaut qui pourraient interférer avec les contrôles
     const preventDefaultBehavior = (e: Event) => {
       e.preventDefault()
       e.stopPropagation()
       return false
     }
 
-    // Ajouter des gestionnaires d'événements pour empêcher la sélection de texte
     renderer.domElement.addEventListener("contextmenu", preventDefaultBehavior)
     renderer.domElement.addEventListener("selectstart", preventDefaultBehavior)
     renderer.domElement.addEventListener("dragstart", preventDefaultBehavior)
 
-    // Fonction pour faire un zoom sur une planète et arrêter son mouvement orbital
+    // Fonctions de zoom et reset
     const zoomToPlanet = (planet: THREE.Mesh) => {
       if (!cameraRef.current || !controlsRef.current) return
 
-      // Annuler toute animation en cours
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
         animationRef.current = null
       }
 
-      // Désactiver les contrôles pendant l'animation
       controlsRef.current.enabled = false
       setControlsEnabled(false)
 
-      // Obtenir la position de la planète
       const planetPosition = new THREE.Vector3()
       planet.getWorldPosition(planetPosition)
 
-      // Calculer la distance de zoom basée sur le rayon de la planète
       const radius = planet.userData.radius || 1
-      const zoomDistance = radius * 3 // Distance plus proche pour un gros plan
-
-      // Calculer la position de la caméra pour le gros plan
-      // Nous voulons être légèrement décalés pour voir la planète sous un angle intéressant
+      const zoomDistance = radius * 3
       const offset = new THREE.Vector3(zoomDistance * 0.7, zoomDistance * 0.5, zoomDistance * 0.7)
-
-      // Position cible de la caméra
       const targetPosition = planetPosition.clone().add(offset)
 
-      // Position et cible actuelles
       const startPosition = cameraRef.current.position.clone()
       const startTarget = controlsRef.current.target.clone()
 
-      // Durée de l'animation en secondes
       const duration = 1.5
       const startTime = clock.getElapsedTime()
 
-      // Arrêter le mouvement orbital de la planète sélectionnée
       planet.userData.orbitSpeed = 0
-
-      // Mettre à jour les informations de la planète sélectionnée
       setSelectedPlanet(planet.userData.planetData)
 
-      // Fonction d'animation
       const animateZoom = () => {
         const currentTime = clock.getElapsedTime()
         const elapsed = currentTime - startTime
 
         if (elapsed < duration) {
-          // Calculer la progression avec easing
           const t = elapsed / duration
-          const easeT = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t // easing
+          const easeT = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
 
-          // Interpoler la position de la caméra
           cameraRef.current!.position.lerpVectors(startPosition, targetPosition, easeT)
-
-          // Interpoler la cible des contrôles
           controlsRef.current!.target.lerpVectors(startTarget, planetPosition, easeT)
-
-          // Mettre à jour les contrôles
           controlsRef.current!.update()
 
-          // Continuer l'animation
           animationRef.current = requestAnimationFrame(animateZoom)
         } else {
-          // Finaliser l'animation
           cameraRef.current!.position.copy(targetPosition)
           controlsRef.current!.target.copy(planetPosition)
           controlsRef.current!.update()
 
-          // Réactiver les contrôles après l'animation
           controlsRef.current!.enabled = true
           setControlsEnabled(true)
         }
       }
 
-      // Démarrer l'animation
       animationRef.current = requestAnimationFrame(animateZoom)
     }
 
-    // Fonction pour revenir à la vue d'ensemble et restaurer le mouvement des planètes
     const resetView = () => {
       if (
-        !cameraRef.current ||
-        !controlsRef.current ||
-        !initialCameraPositionRef.current ||
-        !initialControlsTargetRef.current
+          !cameraRef.current ||
+          !controlsRef.current ||
+          !initialCameraPositionRef.current ||
+          !initialControlsTargetRef.current
       )
         return
 
-      // Annuler toute animation en cours
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
         animationRef.current = null
       }
 
-      // Désactiver les contrôles pendant l'animation
       controlsRef.current.enabled = false
       setControlsEnabled(false)
 
-      // Position et cible actuelles
       const startPosition = cameraRef.current.position.clone()
       const startTarget = controlsRef.current.target.clone()
 
-      // Position et cible initiales
       const targetPosition = initialCameraPositionRef.current.clone()
-      const targetTarget = new THREE.Vector3(0, 0, 0) // Toujours cibler le soleil
+      const targetTarget = new THREE.Vector3(0, 0, 0)
 
-      // Durée de l'animation en secondes
       const duration = 1.5
       const startTime = clock.getElapsedTime()
 
-      // Restaurer le mouvement orbital de toutes les planètes
       planetsRef.current.forEach((planet) => {
         const originalSpeed = originalOrbitSpeedsRef.current.get(planet)
         if (originalSpeed !== undefined) {
@@ -1327,47 +1159,35 @@ export function SolarSystem3D() {
         }
       })
 
-      // Réinitialiser la planète sélectionnée
       setSelectedPlanet(null)
 
-      // Fonction d'animation
       const animateReset = () => {
         const currentTime = clock.getElapsedTime()
         const elapsed = currentTime - startTime
 
         if (elapsed < duration) {
-          // Calculer la progression avec easing
           const t = elapsed / duration
-          const easeT = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t // easing
+          const easeT = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
 
-          // Interpoler la position de la caméra
           cameraRef.current!.position.lerpVectors(startPosition, targetPosition, easeT)
-
-          // Interpoler la cible des contrôles
           controlsRef.current!.target.lerpVectors(startTarget, targetTarget, easeT)
-
-          // Mettre à jour les contrôles
           controlsRef.current!.update()
 
-          // Continuer l'animation
           animationRef.current = requestAnimationFrame(animateReset)
         } else {
-          // Finaliser l'animation
           cameraRef.current!.position.copy(targetPosition)
           controlsRef.current!.target.copy(targetTarget)
           controlsRef.current!.update()
 
-          // Réactiver les contrôles après l'animation
           controlsRef.current!.enabled = true
           setControlsEnabled(true)
         }
       }
 
-      // Démarrer l'animation
       animationRef.current = requestAnimationFrame(animateReset)
     }
 
-    // Modifier le gestionnaire de clic
+    // Gestionnaire de clic
     let lastClickTime = 0
 
     const handleClick = () => {
@@ -1379,11 +1199,9 @@ export function SolarSystem3D() {
       if (intersects.length > 0) {
         const planet = intersects[0].object
         if (planet.userData && planet.userData.path) {
-          // Double-clic pour naviguer vers la page
           if (Date.now() - lastClickTime < 300) {
             router.push(planet.userData.path)
           } else {
-            // Simple clic pour faire un gros plan sur la planète
             console.log("Suivre la planète:", planet.userData.solarName)
             setFollowingPlanet(planet)
             zoomToPlanet(planet)
@@ -1391,69 +1209,45 @@ export function SolarSystem3D() {
           lastClickTime = Date.now()
         }
       } else {
-        // Clic en dehors d'une planète - revenir à la vue d'ensemble
         console.log("Arrêter de suivre")
         setFollowingPlanet(null)
         resetView()
       }
     }
 
-    window.addEventListener("click", handleClick)
-
-    // Assurer que le zoom avec la molette fonctionne correctement
     const handleWheel = (event: WheelEvent) => {
-      // Les contrôles OrbitControls gèrent déjà le zoom,
-      // mais nous pouvons ajouter des comportements personnalisés si nécessaire
       event.preventDefault()
     }
 
+    window.addEventListener("resize", handleResize)
+    window.addEventListener("mousemove", handleMouseMove)
+    window.addEventListener("click", handleClick)
     renderer.domElement.addEventListener("wheel", handleWheel, { passive: false })
 
-    // Animation loop
+    // Boucle d'animation
     const clock = new THREE.Clock()
 
-    // Modifier la fonction animate pour gérer correctement les matériaux
     const animate = () => {
       requestAnimationFrame(animate)
 
       const elapsedTime = clock.getElapsedTime()
 
-      // Update sun shader
       if (sunMaterial instanceof THREE.ShaderMaterial && sunMaterial.uniforms) {
         sunMaterial.uniforms.uTime.value = elapsedTime
       }
 
-      // Faire tourner le soleil sur lui-même
       if (sun && sun.userData && sun.userData.rotationSpeed) {
         sun.rotation.y += sun.userData.rotationSpeed
       }
 
-      // Update glow shader
-      if (glowMaterial && glowMaterial.uniforms) {
-        glowMaterial.uniforms.uTime.value = elapsedTime
-      }
-
-      // Update star shader
       if (starMaterial.uniforms) {
         starMaterial.uniforms.uTime.value = elapsedTime
       }
 
-      // Update celestial materials
-      if (celestialMaterial && celestialMaterial.uniforms) {
-        celestialMaterial.uniforms.uTime.value = elapsedTime
-      }
-
-      // Update distant stars material
-      if (distantStarMaterial && distantStarMaterial.uniforms) {
-        distantStarMaterial.uniforms.uTime.value = elapsedTime
-      }
-
-      // Rotate and orbit planets
+      // Animation des planètes
       planetMeshes.forEach((planet) => {
-        // Rotate planet
         planet.rotation.y += planet.userData.rotationSpeed
 
-        // Orbit around sun (seulement si la vitesse orbitale n'est pas à zéro)
         if (planet.userData.orbitSpeed > 0) {
           planet.userData.orbitAngle += planet.userData.orbitSpeed
           const orbitRadius = planetsDataRef.current.find((p) => p.name === planet.userData.name)?.distance || 10
@@ -1462,40 +1256,26 @@ export function SolarSystem3D() {
           planet.position.z = orbitRadius * Math.sin(planet.userData.orbitAngle)
         }
 
-        // Faire en sorte que les étiquettes (sprites) fassent toujours face à la caméra
         planet.children.forEach((child) => {
           if (child instanceof THREE.Sprite) {
-            // Ajuster la position de l'étiquette pour qu'elle reste au-dessus de la planète
-            // tout en faisant face à la caméra
             if (cameraRef.current) {
-              // Calculer la direction de la caméra vers la planète
               const cameraPosition = cameraRef.current.position.clone()
               const planetPosition = new THREE.Vector3()
               planet.getWorldPosition(planetPosition)
-
-              // Ajuster légèrement la position de l'étiquette pour qu'elle soit toujours visible
               const directionToCamera = cameraPosition.sub(planetPosition).normalize()
-
-              // Déplacer légèrement l'étiquette dans la direction de la caméra pour éviter les occlusions
               child.position.y = planet.userData.radius * 2.5
             }
           }
         })
       })
 
-      // Animer les lunes
+      // Animation des lunes
       planetMeshes.forEach((planet) => {
-        // Parcourir tous les enfants du planet mesh
         planet.children.forEach((child) => {
-          // Si c'est un groupe (orbite de lune)
           if (child instanceof THREE.Group) {
-            // Faire tourner l'orbite de la lune
             child.rotation.y += 0.01
-
-            // Parcourir les enfants du groupe (les lunes)
             child.children.forEach((moon) => {
               if (moon instanceof THREE.Mesh && moon.userData.rotationSpeed) {
-                // Faire tourner la lune sur elle-même
                 moon.rotation.y += moon.userData.rotationSpeed
               }
             })
@@ -1503,53 +1283,36 @@ export function SolarSystem3D() {
         })
       })
 
-      // Ajouter l'animation des météorites dans la fonction animate
-      // Chercher la section qui met à jour les étoiles et ajouter ce code après
-
-      // Dans la fonction animate, ajouter ce code avant le rendu final (avant composer.render())
-
-      // Animer les météorites
+      // Animation des météorites
       meteorsData.forEach((meteorData) => {
-        // Déplacer la météorite
         meteorData.meteor.position.x += meteorData.direction.x * meteorData.speed
         meteorData.meteor.position.y += meteorData.direction.y * meteorData.speed
         meteorData.meteor.position.z += meteorData.direction.z * meteorData.speed
 
-        // Faire tourner la météorite
         meteorData.meteor.rotation.x += meteorData.rotationSpeed.x
         meteorData.meteor.rotation.y += meteorData.rotationSpeed.y
         meteorData.meteor.rotation.z += meteorData.rotationSpeed.z
 
-        // Mettre à jour la traînée
         const positions = meteorData.trailPositions
-
-        // Décaler toutes les positions
         for (let i = positions.length - 3; i >= 3; i -= 3) {
           positions[i] = positions[i - 3]
           positions[i + 1] = positions[i - 2]
           positions[i + 2] = positions[i - 1]
         }
 
-        // Mettre à jour la première position avec la position actuelle de la météorite
         positions[0] = meteorData.meteor.position.x
         positions[1] = meteorData.meteor.position.y
         positions[2] = meteorData.meteor.position.z
-
         meteorData.trailGeometry.attributes.position.needsUpdate = true
 
-        // Mettre à jour le shader
         if (meteorData.material.uniforms) {
           meteorData.material.uniforms.uTime.value = elapsedTime
         }
 
-        // Vérifier si la météorite est trop loin et la replacer si nécessaire
         const distanceFromCenter = meteorData.meteor.position.length()
         if (distanceFromCenter > 800) {
-          // Repositionner la météorite de l'autre côté
           const newPosition = meteorData.meteor.position.clone().normalize().multiplyScalar(-700)
           meteorData.meteor.position.copy(newPosition)
-
-          // Réinitialiser la traînée
           for (let i = 0; i < positions.length; i += 3) {
             positions[i] = newPosition.x
             positions[i + 1] = newPosition.y
@@ -1558,12 +1321,11 @@ export function SolarSystem3D() {
         }
       })
 
-      // Check for planet hover
+      // Détection de survol
       if (cameraRef.current && sceneRef.current) {
         raycasterRef.current.setFromCamera(mouseRef.current, cameraRef.current)
         const intersects = raycasterRef.current.intersectObjects(planetsRef.current)
 
-        // Modifions la partie qui gère le survol des planètes
         if (intersects.length > 0) {
           const planet = intersects[0].object
           setHoveredPlanet(planet.userData.name)
@@ -1574,27 +1336,23 @@ export function SolarSystem3D() {
         }
       }
 
-      // Update controls
       if (controlsRef.current) {
         controlsRef.current.update()
       }
 
-      // Gestion des déplacements clavier
+      // Contrôles clavier
       if (controlsRef.current && cameraRef.current) {
         const moveSpeed = 0.5
         const camera = cameraRef.current
 
-        // Calculer la direction avant/arrière (basée sur où pointe la caméra)
         const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion)
-        forward.y = 0 // Restreindre le mouvement vertical pour les touches W/S
+        forward.y = 0
         forward.normalize().multiplyScalar(moveSpeed)
 
-        // Calculer la direction gauche/droite
         const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion)
-        right.y = 0 // Restreindre le mouvement vertical pour les touches A/D
+        right.y = 0
         right.normalize().multiplyScalar(moveSpeed)
 
-        // Appliquer les mouvements (configuration AZERTY)
         if (keysPressed.z) camera.position.add(forward)
         if (keysPressed.s) camera.position.sub(forward)
         if (keysPressed.q) camera.position.sub(right)
@@ -1603,13 +1361,12 @@ export function SolarSystem3D() {
         if (keysPressed.e) camera.position.y += moveSpeed
       }
 
-      // Utiliser le composer au lieu du renderer
       composer.render()
     }
 
     animate()
 
-    // Modifier la partie cleanup pour gérer correctement les ressources
+    // Nettoyage
     return () => {
       window.removeEventListener("resize", handleResize)
       window.removeEventListener("mousemove", handleMouseMove)
@@ -1632,25 +1389,16 @@ export function SolarSystem3D() {
         containerRef.current.removeChild(rendererRef.current.domElement)
       }
 
-      // Dispose resources
+      // Nettoyage des ressources
       stars.geometry.dispose()
       if (starMaterial instanceof THREE.ShaderMaterial) {
         starMaterial.dispose()
-      }
-
-      // Nettoyer les étoiles distantes
-      if (distantStars && distantStars.geometry) distantStars.geometry.dispose()
-      if (distantStarMaterial instanceof THREE.ShaderMaterial) {
-        distantStarMaterial.dispose()
       }
 
       sun.geometry.dispose()
       if (sunMaterial instanceof THREE.Material) {
         sunMaterial.dispose()
       }
-
-      glow && glow.geometry && glow.geometry.dispose()
-      glowMaterial && glowMaterial instanceof THREE.ShaderMaterial && glowMaterial.dispose()
 
       orbitLines.forEach((line) => {
         line.geometry.dispose()
@@ -1666,21 +1414,11 @@ export function SolarSystem3D() {
         }
       })
 
-      if (rendererRef.current) {
-        rendererRef.current.dispose()
-      }
-      composer.dispose() // Nettoyer le composer
-
-      if (celestialSphere && celestialSphere.geometry) celestialSphere.geometry.dispose()
-      if (celestialMaterial instanceof THREE.ShaderMaterial) celestialMaterial.dispose()
-
-      // Dispose des ressources des météorites
       meteorsData.forEach((meteorData) => {
         meteorData.meteor.geometry.dispose()
         if (meteorData.meteor.material instanceof THREE.Material) {
           meteorData.meteor.material.dispose()
         }
-
         meteorData.trailGeometry.dispose()
         if (meteorData.material instanceof THREE.ShaderMaterial) {
           meteorData.material.dispose()
@@ -1690,91 +1428,91 @@ export function SolarSystem3D() {
       if (meteorGroup) {
         scene.remove(meteorGroup)
       }
+
+      if (rendererRef.current) {
+        rendererRef.current.dispose()
+      }
+      composer.dispose()
     }
   }, [router])
 
-  // Ajouter un message d'aide pour la rotation
   return (
-    <>
-      <div ref={containerRef} className="fixed top-0 left-0 w-full h-full -z-10" />
-      {hoveredPlanet && (
-        <div
-          className="fixed pointer-events-none z-50 bg-black/70 text-white px-3 py-1.5 rounded-md text-sm"
-          style={{
-            left: tooltipPosition.x + 10,
-            top: tooltipPosition.y + 10,
-            transform: "translateZ(0)",
-          }}
-        >
-          {hoveredPlanet}
-        </div>
-      )}
-
-      {/* Carte d'information de la planète */}
-      {selectedPlanet && (
-        <div className="fixed bottom-4 left-4 z-20 max-w-sm">
-          <Card className="bg-black/70 backdrop-blur-sm border-primary/30">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xl flex items-center" style={{ color: selectedPlanet.color }}>
-                {selectedPlanet.solarName}
-              </CardTitle>
-              <CardDescription className="text-white/80">Section: {selectedPlanet.name}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 pb-4">
-              <p className="text-white/90 text-sm">{selectedPlanet.description}</p>
-
-              <div className="grid grid-cols-2 gap-2 text-xs text-white/80">
-                <div>
-                  <p className="font-semibold">Diamètre</p>
-                  <p>{selectedPlanet.diameter}</p>
-                </div>
-                <div>
-                  <p className="font-semibold">Distance du Soleil</p>
-                  <p>{selectedPlanet.distanceFromSun}</p>
-                </div>
-                <div>
-                  <p className="font-semibold">Période orbitale</p>
-                  <p>{selectedPlanet.orbitalPeriod}</p>
-                </div>
-              </div>
-
-              <Button
-                size="sm"
-                className="w-full"
-                onClick={() => router.push(selectedPlanet.path)}
-                style={{
-                  backgroundColor: selectedPlanet.color,
-                  color: "#000",
-                  borderColor: "transparent",
-                }}
-              >
-                Visiter {selectedPlanet.name} <ExternalLink className="ml-2 h-3 w-3" />
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Instructions de navigation - visible uniquement sur desktop */}
-      <div className="fixed bottom-4 right-4 z-20 hidden md:block">
-        <div className="bg-black/70 backdrop-blur-sm text-white px-4 py-3 rounded-lg text-sm">
-          <p className="font-semibold mb-1">Navigation:</p>
-          <p>Se déplacer via ZQSD A E</p>
-          <p className="mt-1">Cliquez sur une planète pour l'explorer</p>
-          <p className="text-xs mt-1">Double-cliquez pour visiter la page</p>
-        </div>
-      </div>
-
-      {/* Indicateur de planète survolée */}
-      <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-10">
+      <>
+        <div ref={containerRef} className="fixed top-0 left-0 w-full h-full -z-10" />
         {hoveredPlanet && (
-          <div className="bg-black/50 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm flex items-center">
-            <div className="w-2 h-2 bg-primary rounded-full mr-2 animate-pulse"></div>
-            <span>Planète: {hoveredPlanet}</span>
-          </div>
+            <div
+                className="fixed pointer-events-none z-50 bg-black/70 text-white px-3 py-1.5 rounded-md text-sm"
+                style={{
+                  left: tooltipPosition.x + 10,
+                  top: tooltipPosition.y + 10,
+                  transform: "translateZ(0)",
+                }}
+            >
+              {hoveredPlanet}
+            </div>
         )}
-      </div>
-    </>
+
+        {selectedPlanet && (
+            <div className="fixed bottom-4 left-4 z-20 max-w-sm">
+              <Card className="bg-black/70 backdrop-blur-sm border-primary/30">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xl flex items-center" style={{ color: selectedPlanet.color }}>
+                    {selectedPlanet.solarName}
+                  </CardTitle>
+                  <CardDescription className="text-white/80">Section: {selectedPlanet.name}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 pb-4">
+                  <p className="text-white/90 text-sm">{selectedPlanet.description}</p>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs text-white/80">
+                    <div>
+                      <p className="font-semibold">Diamètre</p>
+                      <p>{selectedPlanet.diameter}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Distance du Soleil</p>
+                      <p>{selectedPlanet.distanceFromSun}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Période orbitale</p>
+                      <p>{selectedPlanet.orbitalPeriod}</p>
+                    </div>
+                  </div>
+
+                  <Button
+                      size="sm"
+                      className="w-full"
+                      onClick={() => router.push(selectedPlanet.path)}
+                      style={{
+                        backgroundColor: selectedPlanet.color,
+                        color: "#000",
+                        borderColor: "transparent",
+                      }}
+                  >
+                    Visiter {selectedPlanet.name} <ExternalLink className="ml-2 h-3 w-3" />
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+        )}
+
+        <div className="fixed bottom-4 right-4 z-20 hidden md:block">
+          <div className="bg-black/70 backdrop-blur-sm text-white px-4 py-3 rounded-lg text-sm">
+            <p className="font-semibold mb-1">Navigation:</p>
+            <p>Se déplacer via ZQSD A E</p>
+            <p className="mt-1">Cliquez sur une planète pour l'explorer</p>
+            <p className="text-xs mt-1">Double-cliquez pour visiter la page</p>
+          </div>
+        </div>
+
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-10">
+          {hoveredPlanet && (
+              <div className="bg-black/50 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm flex items-center">
+                <div className="w-2 h-2 bg-primary rounded-full mr-2 animate-pulse"></div>
+                <span>Planète: {hoveredPlanet}</span>
+              </div>
+          )}
+        </div>
+      </>
   )
 }
-
