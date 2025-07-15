@@ -270,304 +270,217 @@ export function SolarSystem3D() {
     window.addEventListener("keyup", handleKeyUp)
 
     // Modifier la fonction createStarfield pour augmenter le nombre d'étoiles:
-    const constellationData = [
-      {
-        name: "Orion",
-        positions: [
-          [-150,  30, -180],
-          [-140,  50, -190],
-          [-130,  70, -200],
-          [-160,  60, -210],
-          [-170,  40, -220],
-          [-120,  20, -230],
-          [-110,   0, -240],
-        ],
-        size: 2.0,
-        color: [1.0, 0.9, 0.8],
-      },
-      {
-        name: "Cassiopée",
-        positions: [
-          [ 50, 100, -150],
-          [ 70, 110, -160],
-          [ 90, 100, -170],
-          [110, 120, -180],
-          [130, 110, -190],
-        ],
-        size: 1.7,
-        color: [0.8, 0.8, 1.0],
-      },
-      {
-        name: "Scorpion",
-        positions: [
-          [-80, -50, 200],
-          [-60, -60, 210],
-          [-40, -65, 220],
-          [-20, -70, 230],
-          [  0, -80, 240],
-          [ 20, -90, 250],
-          [ 40, -100,260],
-          [ 60, -110,270],
-          [ 80, -105,280],
-          [100, -95, 290],
-        ],
-        size: 1.9,
-        color: [1.0, 0.7, 0.7],
-      },
-      {
-        name: "Taureau",
-        positions: [
-          [180,  20, 150],
-          [190,  30, 160],
-          [200,  40, 170],
-          [210,  30, 180],
-          [220,  20, 190],
-          [230,  10, 200],
-          [240,   0, 210],
-        ],
-        size: 1.8,
-        color: [0.9, 0.8, 0.6],
-      },
-      {
-        name: "Cygne",
-        positions: [
-          [  0, 150, 180],
-          [ 20, 160, 190],
-          [ 40, 170, 200],
-          [ 60, 180, 210],
-          [ 80, 190, 220],
-          [ 40, 170, 200],
-          [ 40, 150, 200],
-          [ 40, 130, 200],
-        ],
-        size: 1.7,
-        color: [0.8, 0.9, 1.0],
-      },
-      {
-        name: "Sagittaire",
-        positions: [
-          [-200, -30, 100],
-          [-190, -40, 110],
-          [-180, -50, 120],
-          [-170, -40, 130],
-          [-160, -30, 140],
-          [-170, -20, 150],
-          [-180, -10, 160],
-          [-170, -40, 130],
-          [-160, -50, 120],
-          [-150, -60, 110],
-        ],
-        size: 1.6,
-        color: [1.0, 0.8, 0.6],
-      },
-      {
-        name: "Lion",
-        positions: [
-          [150,  30, 100],
-          [170,  40, 110],
-          [190,  35, 120],
-          [210,  30, 130],
-          [230,  25, 140],
-          [210,  30, 130],
-          [200,  10, 135],
-          [190, -10, 140],
-          [210,  30, 130],
-          [200,  50, 135],
-          [190,  70, 140],
-        ],
-        size: 1.7,
-        color: [0.9, 0.8, 0.7],
-      },
-      {
-        name: "Poissons",
-        positions: [
-          [-100, -20, -150],
-          [ -90, -30, -160],
-          [ -80, -40, -170],
-          [ -70, -50, -180],
-          [ -60, -60, -190],
-          [ -50, -70, -200],
-          [ -40, -60, -210],
-          [ -30, -50, -220],
-          [ -20, -40, -230],
-          [ -10, -30, -240],
-        ],
-        size: 1.5,
-        color: [0.7, 0.8, 0.9],
-      },
-      {
-        name: "Gémeaux",
-        positions: [
-          [   0,  80, -180],
-          [  10,  90, -170],
-          [  20, 100, -160],
-          [  30, 110, -150],
-          [  20, 100, -160],
-          [  10, 110, -170],
-          [   0, 120, -180],
-          [ -10, 110, -190],
-          [ -20, 100, -200],
-          [ -10, 110, -190],
-          [   0, 120, -180],
-        ],
-        size: 1.6,
-        color: [0.8, 0.9, 0.8],
-      },
-      {
-        name: "Croix du Sud",
-        positions: [
-          [  0, -120, -100],
-          [  0, -140, -100],
-          [  0, -160, -100],
-          [  0, -140, -100],
-          [ -10, -140, -100],
-          [  10, -140, -100],
-        ],
-        size: 2.2,
-        color: [1.0, 0.9, 0.9],
-      },
-      {
-        name: "Andromède",
-        positions: [
-          [100, 120, 100],
-          [110, 130, 110],
-          [120, 140, 120],
-          [130, 150, 130],
-          [140, 160, 140],
-          [150, 170, 150],
-          [160, 180, 160],
-        ],
-        size: 1.7,
-        color: [0.9, 0.7, 0.9],
-      },
-      // --- Les 7 constellations additionnelles ---
-      {
-        name: "Bélier",
-        positions: [
-          [-200, 100, -100],
-          [-180, 120, -120],
-          [-160, 130, -140],
-          [-140, 125, -160],
-          [-120, 110, -180],
-          [-100,  95, -200],
-        ],
-        size: 1.6,
-        color: [1.0, 0.8, 0.6],
-      },
-      {
-        name: "Cancer",
-        positions: [
-          [  50,  50,  50],
-          [  70,  60,  70],
-          [  90,  55,  90],
-          [ 110,  65, 110],
-          [ 130,  60, 130],
-        ],
-        size: 1.5,
-        color: [0.7, 0.9, 1.0],
-      },
-      {
-        name: "Vierge",
-        positions: [
-          [100,   0, -100],
-          [120,  10, -110],
-          [140,  20, -120],
-          [160,  10, -130],
-          [180,   0, -140],
-          [200, -10, -150],
-        ],
-        size: 1.7,
-        color: [0.9, 1.0, 0.8],
-      },
-      {
-        name: "Balance",
-        positions: [
-          [-100, 100, 100],
-          [ -80, 110, 110],
-          [ -60, 120, 120],
-          [ -40, 110, 130],
-          [ -20, 100, 140],
-        ],
-        size: 1.6,
-        color: [1.0, 0.9, 0.7],
-      },
-      {
-        name: "Capricorne",
-        positions: [
-          [100, -100, 100],
-          [110, -110, 110],
-          [120, -120, 120],
-          [130, -110, 130],
-          [140, -100, 140],
-        ],
-        size: 1.6,
-        color: [0.8, 0.7, 1.0],
-      },
-      {
-        name: "Verseau",
-        positions: [
-          [-100, 200,   0],
-          [ -80, 210,  10],
-          [ -60, 220,  20],
-          [ -40, 210,  30],
-          [ -20, 200,  40],
-        ],
-        size: 1.5,
-        color: [0.7, 0.8, 1.0],
-      },
-      {
-        name: "Grande Ourse",
-        positions: [
-          [-200, 200, -50],
-          [-180, 180, -40],
-          [-160, 160, -30],
-          [-140, 180, -20],
-          [-120, 200, -10],
-          [-100, 220,   0],
-          [ -80, 240,  10],
-        ],
-        size: 2.2,
-        color: [0.9, 0.9, 1.0],
-      },
-      {
-        name: "Petite Ourse",
-        positions: [
-          [-150, 150, -30],
-          [-140, 140, -20],
-          [-130, 130, -10],
-          [-120, 140,   0],
-          [-110, 150,  10],
-        ],
-        size: 1.9,
-        color: [0.9, 0.9, 0.8],
-      },
-    ];
 
     // Ajouter une fonction pour créer des étoiles plus réalistes
     const createStarfield = () => {
-      const starCount = 3000;
-      const starGeometry = new THREE.BufferGeometry();
-      const starPositions = new Float32Array(starCount * 3);
-      const starSizes     = new Float32Array(starCount);
-      const starColors    = new Float32Array(starCount * 3);
+      const starCount = 3000 // Augmenté de 2000 à 3000 pour plus d'étoiles
+      const starGeometry = new THREE.BufferGeometry()
+      const starPositions = new Float32Array(starCount * 3)
+      const starSizes = new Float32Array(starCount)
+      const starColors = new Float32Array(starCount * 3)
 
-      // --- NOUVEAU : on écrit d’abord les constellations ---
-      let posIndex = 0;
-      constellationData.forEach((constel) => {
-        constel.positions.forEach(([x,y,z]) => {
-          const i3 = posIndex * 3;
-          starPositions[i3]   = x;
-          starPositions[i3+1] = y;
-          starPositions[i3+2] = z;
-          starSizes[posIndex] = constel.size;
-          starColors[i3]   = constel.color[0];
-          starColors[i3+1] = constel.color[1];
-          starColors[i3+2] = constel.color[2];
-          posIndex++;
-        });
-      });
+      // Créer des constellations reconnaissables
+      const constellations = [
+        {
+          // Orion
+          name: "Orion",
+          positions: [
+            [-150, 30, -180],
+            [-140, 50, -190],
+            [-130, 70, -200],
+            [-160, 60, -210],
+            [-170, 40, -220],
+            [-120, 20, -230],
+            [-110, 0, -240],
+          ],
+          size: 2.0,
+          color: [1.0, 0.9, 0.8],
+        },
+        {
+          // Cassiopée
+          name: "Cassiopée",
+          positions: [
+            [50, 100, -150],
+            [70, 110, -160],
+            [90, 100, -170],
+            [110, 120, -180],
+            [130, 110, -190],
+          ],
+          size: 1.7,
+          color: [0.8, 0.8, 1.0],
+        },
+        {
+          // Scorpion
+          name: "Scorpion",
+          positions: [
+            [-80, -50, 200],
+            [-60, -60, 210],
+            [-40, -65, 220],
+            [-20, -70, 230],
+            [0, -80, 240],
+            [20, -90, 250],
+            [40, -100, 260],
+            [60, -110, 270],
+            [80, -105, 280],
+            [100, -95, 290],
+          ],
+          size: 1.9,
+          color: [1.0, 0.7, 0.7],
+        },
+        {
+          // Taureau
+          name: "Taureau",
+          positions: [
+            [180, 20, 150],
+            [190, 30, 160],
+            [200, 40, 170],
+            [210, 30, 180],
+            [220, 20, 190],
+            [230, 10, 200],
+            [240, 0, 210],
+          ],
+          size: 1.8,
+          color: [0.9, 0.8, 0.6],
+        },
+        {
+          // Cygne (Croix du Nord)
+          name: "Cygne",
+          positions: [
+            [0, 150, 180],
+            [20, 160, 190],
+            [40, 170, 200],
+            [60, 180, 210],
+            [80, 190, 220],
+            [40, 170, 200],
+            [40, 150, 200],
+            [40, 130, 200],
+          ],
+          size: 1.7,
+          color: [0.8, 0.9, 1.0],
+        },
+        {
+          // Sagittaire
+          name: "Sagittaire",
+          positions: [
+            [-200, -30, 100],
+            [-190, -40, 110],
+            [-180, -50, 120],
+            [-170, -40, 130],
+            [-160, -30, 140],
+            [-170, -20, 150],
+            [-180, -10, 160],
+            [-170, -40, 130],
+            [-160, -50, 120],
+            [-150, -60, 110],
+          ],
+          size: 1.6,
+          color: [1.0, 0.8, 0.6],
+        },
+        {
+          // Lion
+          name: "Lion",
+          positions: [
+            [150, 30, 100],
+            [170, 40, 110],
+            [190, 35, 120],
+            [210, 30, 130],
+            [230, 25, 140],
+            [210, 30, 130],
+            [200, 10, 135],
+            [190, -10, 140],
+            [210, 30, 130],
+            [200, 50, 135],
+            [190, 70, 140],
+          ],
+          size: 1.7,
+          color: [0.9, 0.8, 0.7],
+        },
+        {
+          // Poissons
+          name: "Poissons",
+          positions: [
+            [-100, -20, -150],
+            [-90, -30, -160],
+            [-80, -40, -170],
+            [-70, -50, -180],
+            [-60, -60, -190],
+            [-50, -70, -200],
+            [-40, -60, -210],
+            [-30, -50, -220],
+            [-20, -40, -230],
+            [-10, -30, -240],
+          ],
+          size: 1.5,
+          color: [0.7, 0.8, 0.9],
+        },
+        {
+          // Gémeaux
+          name: "Gémeaux",
+          positions: [
+            [0, 80, -180],
+            [10, 90, -170],
+            [20, 100, -160],
+            [30, 110, -150],
+            [20, 100, -160],
+            [10, 110, -170],
+            [0, 120, -180],
+            [-10, 110, -190],
+            [-20, 100, -200],
+            [-10, 110, -190],
+            [0, 120, -180],
+          ],
+          size: 1.6,
+          color: [0.8, 0.9, 0.8],
+        },
+        {
+          // Croix du Sud (plus petite mais brillante)
+          name: "Croix du Sud",
+          positions: [
+            [0, -120, -100],
+            [0, -140, -100],
+            [0, -160, -100],
+            [0, -140, -100],
+            [-10, -140, -100],
+            [10, -140, -100],
+          ],
+          size: 2.2,
+          color: [1.0, 0.9, 0.9],
+        },
+        {
+          // Andromède
+          name: "Andromède",
+          positions: [
+            [100, 120, 100],
+            [110, 130, 110],
+            [120, 140, 120],
+            [130, 150, 130],
+            [140, 160, 140],
+            [150, 170, 150],
+            [160, 180, 160],
+          ],
+          size: 1.7,
+          color: [0.9, 0.7, 0.9],
+        },
+      ]
 
+      // Ajouter les étoiles des constellations
+      let posIndex = 0
+      constellations.forEach((constellation) => {
+        constellation.positions.forEach((pos) => {
+          const i3 = posIndex * 3
+          starPositions[i3] = pos[0]
+          starPositions[i3 + 1] = pos[1]
+          starPositions[i3 + 2] = pos[2]
 
+          starSizes[posIndex] = constellation.size
+
+          starColors[i3] = constellation.color[0]
+          starColors[i3 + 1] = constellation.color[1]
+          starColors[i3 + 2] = constellation.color[2]
+
+          posIndex++
+        })
+      })
 
       // Ajouter les étoiles aléatoires pour le reste
       for (let i = posIndex; i < starCount; i++) {
