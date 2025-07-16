@@ -993,4 +993,3 @@ export function SolarSystem3D() {
       </>
   )
 }
-
