@@ -27,4 +27,3 @@ export function GlassPanel({ children, className = "", intensity = "medium" }: G
     </div>
   )
 }
-

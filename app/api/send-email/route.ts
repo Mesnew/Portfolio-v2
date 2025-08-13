@@ -60,4 +60,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Erreur lors de l'envoi de l'email" }, { status: 500 })
   }
 }
-

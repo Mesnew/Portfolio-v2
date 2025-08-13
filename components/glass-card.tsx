@@ -21,4 +21,3 @@ export function GlassCard({ children, className, glowColor = "rgba(0, 200, 255, 
     </div>
   )
 }
-

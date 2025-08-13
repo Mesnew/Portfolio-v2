@@ -465,4 +465,3 @@ export function OrganicBackground3D() {
 
   return <div ref={containerRef} className="fixed top-0 left-0 w-full h-full -z-10 bg-primary/5" />
 }
-

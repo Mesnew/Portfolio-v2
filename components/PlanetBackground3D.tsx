@@ -235,4 +235,3 @@ export function PlanetBackground3D({ planetType }: PlanetBackgroundProps) {
 
   return <div ref={containerRef} className="fixed inset-0 -z-10" />
 }
-

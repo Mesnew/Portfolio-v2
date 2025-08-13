@@ -200,4 +200,3 @@ export function Background3D() {
     </div>
   )
 }
-

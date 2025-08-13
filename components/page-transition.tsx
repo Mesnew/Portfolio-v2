@@ -57,4 +57,3 @@ export function PageTransition({ children }: PageTransitionProps) {
 
   return <div className="flex-grow">{children}</div>
 }
-

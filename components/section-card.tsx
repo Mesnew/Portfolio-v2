@@ -44,4 +44,3 @@ export function SectionCard({ title, description, href, icon, animationDelay = 0
     </div>
   )
 }
-

@@ -55,4 +55,3 @@ export function CarLoading({ duration = 1500, onComplete }: CarLoadingProps) {
     </div>
   )
 }
-

@@ -278,4 +278,3 @@ export function TableauPreviewModal({ isOpen, onClose }: TableauPreviewModalProp
     </Dialog>
   )
 }
-

@@ -8,4 +8,3 @@ export function SpaceNavIndicator() {
   // Ne plus afficher l'indicateur de navigation
   return null
 }
-

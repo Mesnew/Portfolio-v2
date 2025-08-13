@@ -207,4 +207,3 @@ export function ProjectDetailModal({ project, isOpen, onClose, onViewDetails }: 
     </Dialog>
   )
 }
-

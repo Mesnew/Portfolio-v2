@@ -54,4 +54,3 @@ export default function MapComponent({ position, zoom, markerPosition, popupCont
 
   return <div ref={mapRef} style={{ height: "400px", width: "100%" }} />
 }
-

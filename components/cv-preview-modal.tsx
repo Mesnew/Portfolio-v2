@@ -183,4 +183,3 @@ export function CVPreviewModal({ isOpen, onClose }: CVPreviewModalProps) {
     </Dialog>
   )
 }
-

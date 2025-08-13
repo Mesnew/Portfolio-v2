@@ -16,4 +16,3 @@ const CardContent = React.forwardRef<React.ElementRef<"div">, React.ComponentPro
 CardContent.displayName = "CardContent"
 
 export { Card, CardContent }
-
