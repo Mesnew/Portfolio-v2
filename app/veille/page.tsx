@@ -121,7 +121,7 @@ export default function VeillePage() {
 
   return (
     <main className="min-h-screen flex flex-col relative overflow-hidden">
-      <PlanetBackground3D planetType="earth" />
+      <PlanetBackground3D planetType="jupiter" />
       <div className="relative z-10 flex flex-col flex-grow">
         <Header />
 

@@ -85,9 +85,10 @@ body {
 }
 
 @layer base {
+  * {
+    @apply border-border;
+  }
   body {
-    /* Replace @apply with direct CSS properties using custom properties */
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
+    @apply bg-background text-foreground;
   }
 }
