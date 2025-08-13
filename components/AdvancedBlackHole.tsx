@@ -7,7 +7,7 @@ interface AdvancedBlackHoleProps {
   onTransitionComplete?: () => void
 }
 
-export default function AdvancedBlackHole({ onTransitionComplete }: AdvancedBlackHoleProps) {
+export function AdvancedBlackHole({ onTransitionComplete }: AdvancedBlackHoleProps) {
   const [showBlackHole, setShowBlackHole] = useState(true)
   const [showSystem, setShowSystem] = useState(false)
   const [loadingProgress, setLoadingProgress] = useState(0)
@@ -120,35 +120,35 @@ export default function AdvancedBlackHole({ onTransitionComplete }: AdvancedBlac
   }, [onTransitionComplete])
 
   return (
-      <main className="min-h-screen flex flex-col relative overflow-hidden">
-        {showBlackHole && (
-            <div className="fixed inset-0 z-50">
-              <canvas
-                  ref={canvasRef}
-                  className="absolute inset-0 w-full h-full"
-                  style={{
-                    background: "radial-gradient(circle, #0f0a1e 0%, #000000 100%)",
-                  }}
-              />
+    <main className="min-h-screen flex flex-col relative overflow-hidden">
+      {showBlackHole && (
+        <div className="fixed inset-0 z-50">
+          <canvas
+            ref={canvasRef}
+            className="absolute inset-0 w-full h-full"
+            style={{
+              background: "radial-gradient(circle, #0f0a1e 0%, #000000 100%)",
+            }}
+          />
 
-              {loadingProgress < 100 && (
-                  <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 text-center">
-                    <div className="text-white/60 mb-4 text-sm">Initialisation du système stellaire...</div>
-                    <div className="w-80 h-1 bg-white/20 rounded-full overflow-hidden">
-                      <div
-                          className="h-full bg-gradient-to-r from-orange-500 to-red-500 transition-all duration-100 ease-out"
-                          style={{ width: `${loadingProgress}%` }}
-                      />
-                    </div>
-                    <div className="text-white/40 mt-2 text-xs">{Math.round(loadingProgress)}%</div>
-                  </div>
-              )}
+          {loadingProgress < 100 && (
+            <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 text-center">
+              <div className="text-white/60 mb-4 text-sm">Initialisation du système stellaire...</div>
+              <div className="w-80 h-1 bg-white/20 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-orange-500 to-red-500 transition-all duration-100 ease-out"
+                  style={{ width: `${loadingProgress}%` }}
+                />
+              </div>
+              <div className="text-white/40 mt-2 text-xs">{Math.round(loadingProgress)}%</div>
             </div>
-        )}
-
-        <div className={`transition-opacity duration-1000 ${showSystem && !showBlackHole ? "opacity-100" : "opacity-0"}`}>
-          {showSystem && <SolarSystem3D />}
+          )}
         </div>
-      </main>
+      )}
+
+      <div className={`transition-opacity duration-1000 ${showSystem && !showBlackHole ? "opacity-100" : "opacity-0"}`}>
+        {showSystem && <SolarSystem3D />}
+      </div>
+    </main>
   )
 }

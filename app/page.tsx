@@ -1,5 +1,5 @@
 "use client"
-import AdvancedBlackHole from "@/components/AdvancedBlackHole"
+import { AdvancedBlackHole } from "@/components/AdvancedBlackHole"
 import { useEffect, useState } from "react"
 
 export default function Home() {
@@ -28,8 +28,8 @@ export default function Home() {
   }
 
   return (
-      <main className="min-h-screen flex flex-col relative overflow-hidden">
-        <AdvancedBlackHole onTransitionComplete={handleTransitionComplete} />
-      </main>
+    <main className="min-h-screen flex flex-col relative overflow-hidden">
+      <AdvancedBlackHole onTransitionComplete={handleTransitionComplete} />
+    </main>
   )
 }
