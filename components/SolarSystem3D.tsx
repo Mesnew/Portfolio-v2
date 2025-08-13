@@ -70,7 +70,7 @@ export function SolarSystem3D() {
         color: "#c0c0c0", // Gris argenté
         path: "/a-propos",
         description:
-          "Découvrez mon parcours, mes compétences et ma passion pour le développement web. Cette section présente mon profil professionnel et personnel.",
+            "Découvrez mon parcours, mes compétences et ma passion pour le développement web. Cette section présente mon profil professionnel et personnel.",
         diameter: "4 880 km",
         distanceFromSun: "57,9 millions km",
         orbitalPeriod: "88 jours",
@@ -86,7 +86,7 @@ export function SolarSystem3D() {
         color: "#e39e54", // Jaune-orangé
         path: "/realisations",
         description:
-          "Explorez mon portfolio de projets et réalisations. Cette galerie présente mes travaux les plus significatifs et démontre mes compétences techniques.",
+            "Explorez mon portfolio de projets et réalisations. Cette galerie présente mes travaux les plus significatifs et démontre mes compétences techniques.",
         diameter: "12 104 km",
         distanceFromSun: "108,2 millions km",
         orbitalPeriod: "225 jours",
@@ -102,7 +102,7 @@ export function SolarSystem3D() {
         color: "#4dabf7", // Bleu
         path: "/veille",
         description:
-          "Ma veille technologique où je partage des articles, ressources et réflexions sur les dernières tendances du développement web et des technologies émergentes.",
+            "Ma veille technologique où je partage des articles, ressources et réflexions sur les dernières tendances du développement web et des technologies émergentes.",
         diameter: "12 756 km",
         distanceFromSun: "149,6 millions km",
         orbitalPeriod: "365,25 jours",
@@ -119,7 +119,7 @@ export function SolarSystem3D() {
         color: "#fa5252", // Rouge
         path: "/contact",
         description:
-          "Entrez en contact avec moi pour discuter de collaborations, opportunités professionnelles ou simplement échanger sur des sujets techniques.",
+            "Entrez en contact avec moi pour discuter de collaborations, opportunités professionnelles ou simplement échanger sur des sujets techniques.",
         diameter: "6 792 km",
         distanceFromSun: "227,9 millions km",
         orbitalPeriod: "687 jours",
@@ -139,7 +139,7 @@ export function SolarSystem3D() {
         color: "#fcc419", // Jaune-brun
         path: "/test",
         description:
-          "Espace d'expérimentation où je teste de nouvelles idées, concepts et technologies avant de les intégrer dans mes projets principaux.",
+            "Espace d'expérimentation où je teste de nouvelles idées, concepts et technologies avant de les intégrer dans mes projets principaux.",
         diameter: "142 984 km",
         distanceFromSun: "778,5 millions km",
         orbitalPeriod: "11,86 ans",
@@ -161,7 +161,7 @@ export function SolarSystem3D() {
         color: "#e9d8a6", // Beige-doré
         path: "/test",
         description:
-          "Contenu supplémentaire et ressources diverses qui ne rentrent pas dans les autres catégories mais qui complètent mon univers numérique.",
+            "Contenu supplémentaire et ressources diverses qui ne rentrent pas dans les autres catégories mais qui complètent mon univers numérique.",
         diameter: "120 536 km",
         distanceFromSun: "1,4 milliard km",
         orbitalPeriod: "29,46 ans",
@@ -220,10 +220,10 @@ export function SolarSystem3D() {
 
     // Ajouter un effet de bloom amélioré pour rendre les objets lumineux plus brillants
     const bloomPass = new UnrealBloomPass(
-      new THREE.Vector2(window.innerWidth, window.innerHeight),
-      0.7, // strength - augmenté pour plus d'éclat
-      0.5, // radius - légèrement augmenté pour un halo plus large
-      0.75, // threshold - légèrement réduit pour capturer plus d'éléments
+        new THREE.Vector2(window.innerWidth, window.innerHeight),
+        0.7, // strength - augmenté pour plus d'éclat
+        0.5, // radius - légèrement augmenté pour un halo plus large
+        0.75, // threshold - légèrement réduit pour capturer plus d'éléments
     )
     composer.addPass(bloomPass)
 
@@ -845,9 +845,9 @@ export function SolarSystem3D() {
           trailPositions,
           trailGeometry,
           direction: new THREE.Vector3(
-            (Math.random() - 0.5) * 0.3,
-            (Math.random() - 0.5) * 0.3,
-            (Math.random() - 0.5) * 0.3,
+              (Math.random() - 0.5) * 0.3,
+              (Math.random() - 0.5) * 0.3,
+              (Math.random() - 0.5) * 0.3,
           ).normalize(),
           speed: Math.random() * 0.5 + 0.2,
           rotationSpeed: {
@@ -1290,10 +1290,10 @@ export function SolarSystem3D() {
     // Fonction pour revenir à la vue d'ensemble et restaurer le mouvement des planètes
     const resetView = () => {
       if (
-        !cameraRef.current ||
-        !controlsRef.current ||
-        !initialCameraPositionRef.current ||
-        !initialControlsTargetRef.current
+          !cameraRef.current ||
+          !controlsRef.current ||
+          !initialCameraPositionRef.current ||
+          !initialControlsTargetRef.current
       )
         return
 
@@ -1695,85 +1695,85 @@ export function SolarSystem3D() {
 
   // Ajouter un message d'aide pour la rotation
   return (
-    <>
-      <div ref={containerRef} className="fixed top-0 left-0 w-full h-full -z-10" />
-      {hoveredPlanet && (
-        <div
-          className="fixed pointer-events-none z-50 bg-black/70 text-white px-3 py-1.5 rounded-md text-sm"
-          style={{
-            left: tooltipPosition.x + 10,
-            top: tooltipPosition.y + 10,
-            transform: "translateZ(0)",
-          }}
-        >
-          {hoveredPlanet}
-        </div>
-      )}
-
-      {/* Carte d'information de la planète */}
-      {selectedPlanet && (
-        <div className="fixed bottom-4 left-4 z-20 max-w-sm">
-          <Card className="bg-black/70 backdrop-blur-sm border-primary/30">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xl flex items-center" style={{ color: selectedPlanet.color }}>
-                {selectedPlanet.solarName}
-              </CardTitle>
-              <CardDescription className="text-white/80">Section: {selectedPlanet.name}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 pb-4">
-              <p className="text-white/90 text-sm">{selectedPlanet.description}</p>
-
-              <div className="grid grid-cols-2 gap-2 text-xs text-white/80">
-                <div>
-                  <p className="font-semibold">Diamètre</p>
-                  <p>{selectedPlanet.diameter}</p>
-                </div>
-                <div>
-                  <p className="font-semibold">Distance du Soleil</p>
-                  <p>{selectedPlanet.distanceFromSun}</p>
-                </div>
-                <div>
-                  <p className="font-semibold">Période orbitale</p>
-                  <p>{selectedPlanet.orbitalPeriod}</p>
-                </div>
-              </div>
-
-              <Button
-                size="sm"
-                className="w-full"
-                onClick={() => router.push(selectedPlanet.path)}
-                style={{
-                  backgroundColor: selectedPlanet.color,
-                  color: "#000",
-                  borderColor: "transparent",
-                }}
-              >
-                Visiter {selectedPlanet.name} <ExternalLink className="ml-2 h-3 w-3" />
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Instructions de navigation - visible uniquement sur desktop */}
-      <div className="fixed bottom-4 right-4 z-20 hidden md:block">
-        <div className="bg-black/70 backdrop-blur-sm text-white px-4 py-3 rounded-lg text-sm">
-          <p className="font-semibold mb-1">Navigation:</p>
-          <p>Se déplacer via ZQSD A E</p>
-          <p className="mt-1">Cliquez sur une planète pour l'explorer</p>
-          <p className="text-xs mt-1">Double-cliquez pour visiter la page</p>
-        </div>
-      </div>
-
-      {/* Indicateur de planète survolée */}
-      <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-10">
+      <>
+        <div ref={containerRef} className="fixed top-0 left-0 w-full h-full -z-10" />
         {hoveredPlanet && (
-          <div className="bg-black/50 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm flex items-center">
-            <div className="w-2 h-2 bg-primary rounded-full mr-2 animate-pulse"></div>
-            <span>Planète: {hoveredPlanet}</span>
-          </div>
+            <div
+                className="fixed pointer-events-none z-50 bg-black/70 text-white px-3 py-1.5 rounded-md text-sm"
+                style={{
+                  left: tooltipPosition.x + 10,
+                  top: tooltipPosition.y + 10,
+                  transform: "translateZ(0)",
+                }}
+            >
+              {hoveredPlanet}
+            </div>
         )}
-      </div>
-    </>
+
+        {/* Carte d'information de la planète */}
+        {selectedPlanet && (
+            <div className="fixed bottom-4 left-4 z-20 max-w-sm">
+              <Card className="bg-black/70 backdrop-blur-sm border-primary/30">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xl flex items-center" style={{ color: selectedPlanet.color }}>
+                    {selectedPlanet.solarName}
+                  </CardTitle>
+                  <CardDescription className="text-white/80">Section: {selectedPlanet.name}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 pb-4">
+                  <p className="text-white/90 text-sm">{selectedPlanet.description}</p>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs text-white/80">
+                    <div>
+                      <p className="font-semibold">Diamètre</p>
+                      <p>{selectedPlanet.diameter}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Distance du Soleil</p>
+                      <p>{selectedPlanet.distanceFromSun}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Période orbitale</p>
+                      <p>{selectedPlanet.orbitalPeriod}</p>
+                    </div>
+                  </div>
+
+                  <Button
+                      size="sm"
+                      className="w-full"
+                      onClick={() => router.push(selectedPlanet.path)}
+                      style={{
+                        backgroundColor: selectedPlanet.color,
+                        color: "#000",
+                        borderColor: "transparent",
+                      }}
+                  >
+                    Visiter {selectedPlanet.name} <ExternalLink className="ml-2 h-3 w-3" />
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+        )}
+
+        {/* Instructions de navigation - visible uniquement sur desktop */}
+        <div className="fixed bottom-4 right-4 z-20 hidden md:block">
+          <div className="bg-black/70 backdrop-blur-sm text-white px-4 py-3 rounded-lg text-sm">
+            <p className="font-semibold mb-1">Navigation:</p>
+            <p>Se déplacer via ZQSD A E</p>
+            <p className="mt-1">Cliquez sur une planète pour l'explorer</p>
+            <p className="text-xs mt-1">Double-cliquez pour visiter la page</p>
+          </div>
+        </div>
+
+        {/* Indicateur de planète survolée */}
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-10">
+          {hoveredPlanet && (
+              <div className="bg-black/50 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm flex items-center">
+                <div className="w-2 h-2 bg-primary rounded-full mr-2 animate-pulse"></div>
+                <span>Planète: {hoveredPlanet}</span>
+              </div>
+          )}
+        </div>
+      </>
   )
 }

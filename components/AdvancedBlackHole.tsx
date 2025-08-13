@@ -10,7 +10,6 @@ interface AdvancedBlackHoleProps {
 export function AdvancedBlackHole({ onTransitionComplete }: AdvancedBlackHoleProps) {
   const [showBlackHole, setShowBlackHole] = useState(true)
   const [showSystem, setShowSystem] = useState(false)
-  const [loadingProgress, setLoadingProgress] = useState(0)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number>()
 
@@ -51,31 +50,23 @@ export function AdvancedBlackHole({ onTransitionComplete }: AdvancedBlackHolePro
     }
 
     const animate = () => {
-      const fadeAlpha = time > 4.2 ? Math.max(0, 1 - (time - 4.2) * 3) : 0.1
-      ctx.fillStyle = `rgba(0, 0, 0, ${fadeAlpha})`
+      ctx.fillStyle = "rgba(0, 0, 0, 0.1)"
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
       time += 0.016
 
-      const progress = Math.min((time / 4.5) * 100, 100)
-      setLoadingProgress(progress)
-
-      if (time > 4.0 && !showSystem) {
-        setShowSystem(true)
-      }
-
-      const blackHoleAlpha = time > 4.2 ? Math.max(0, 1 - (time - 4.2) * 3) : 1
+      // Draw black hole
       const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 60)
-      gradient.addColorStop(0, `rgba(0, 0, 0, ${blackHoleAlpha})`)
-      gradient.addColorStop(0.8, `rgba(20, 10, 40, ${0.8 * blackHoleAlpha})`)
-      gradient.addColorStop(1, `rgba(255, 100, 0, ${0.3 * blackHoleAlpha})`)
+      gradient.addColorStop(0, "rgba(0, 0, 0, 1)")
+      gradient.addColorStop(0.8, "rgba(20, 10, 40, 0.8)")
+      gradient.addColorStop(1, "rgba(255, 100, 0, 0.3)")
 
       ctx.fillStyle = gradient
       ctx.beginPath()
       ctx.arc(centerX, centerY, 60, 0, Math.PI * 2)
       ctx.fill()
 
-      // Draw accretion disk particles with fade out
+      // Draw accretion disk particles
       particles.forEach((particle) => {
         particle.angle += particle.speed
         particle.radius -= 0.2
@@ -93,16 +84,18 @@ export function AdvancedBlackHole({ onTransitionComplete }: AdvancedBlackHolePro
         const g = Math.floor(100 * temp)
         const b = Math.floor(20 * temp)
 
-        const particleAlpha = particle.opacity * blackHoleAlpha
-        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${particleAlpha})`
+        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${particle.opacity})`
         ctx.beginPath()
         ctx.arc(x, y, particle.size, 0, Math.PI * 2)
         ctx.fill()
       })
 
-      if (time > 4.5) {
-        setShowBlackHole(false)
-        onTransitionComplete?.()
+      if (time > 4) {
+        setShowSystem(true)
+        setTimeout(() => {
+          setShowBlackHole(false)
+          onTransitionComplete?.()
+        }, 1000)
         return
       }
 
@@ -130,25 +123,14 @@ export function AdvancedBlackHole({ onTransitionComplete }: AdvancedBlackHolePro
               background: "radial-gradient(circle, #0f0a1e 0%, #000000 100%)",
             }}
           />
-
-          {loadingProgress < 100 && (
-            <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 text-center">
-              <div className="text-white/60 mb-4 text-sm">Initialisation du système stellaire...</div>
-              <div className="w-80 h-1 bg-white/20 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-orange-500 to-red-500 transition-all duration-100 ease-out"
-                  style={{ width: `${loadingProgress}%` }}
-                />
-              </div>
-              <div className="text-white/40 mt-2 text-xs">{Math.round(loadingProgress)}%</div>
-            </div>
-          )}
         </div>
       )}
 
-      <div className={`transition-opacity duration-1000 ${showSystem && !showBlackHole ? "opacity-100" : "opacity-0"}`}>
-        {showSystem && <SolarSystem3D />}
-      </div>
+      {showSystem && (
+        <div className={`transition-opacity duration-1000 ${showBlackHole ? "opacity-0" : "opacity-100"}`}>
+          <SolarSystem3D />
+        </div>
+      )}
     </main>
   )
 }
