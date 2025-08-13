@@ -3,8 +3,7 @@ import { AdvancedBlackHole } from "@/components/AdvancedBlackHole"
 import { useEffect, useState } from "react"
 
 export default function Home() {
-  const [showIntro, setShowIntro] = useState(true)
-  const [showSystem, setShowSystem] = useState(false)
+  const [transitionComplete, setTransitionComplete] = useState(false)
 
   // Désactiver les comportements par défaut du navigateur qui pourraient interférer
   useEffect(() => {
@@ -24,9 +23,13 @@ export default function Home() {
     }
   }, [])
 
+  const handleTransitionComplete = () => {
+    setTransitionComplete(true)
+  }
+
   return (
-    <main className="min-h-screen flex flex-col relative overflow-hidden">
-      <AdvancedBlackHole />
-    </main>
+      <main className="min-h-screen flex flex-col relative overflow-hidden">
+        <AdvancedBlackHole onTransitionComplete={handleTransitionComplete} />
+      </main>
   )
 }
