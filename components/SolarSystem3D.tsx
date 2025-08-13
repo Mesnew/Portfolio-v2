@@ -11,7 +11,6 @@ import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ExternalLink } from "lucide-react"
-// import { motion } from "framer-motion"
 
 // Définition des planètes et leurs propriétés
 interface Planet {
@@ -54,6 +53,7 @@ export function SolarSystem3D() {
   const originalOrbitSpeedsRef = useRef<Map<THREE.Mesh, number>>(new Map())
   // État pour suivre si les contrôles sont actifs
   const [controlsEnabled, setControlsEnabled] = useState(true)
+  const galaxiesRef = useRef<THREE.Points[]>([])
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -130,14 +130,14 @@ export function SolarSystem3D() {
         ],
       },
       {
-        name: "Laboratoire",
+        name: "Test",
         solarName: "Jupiter",
         radius: 1.8,
         distance: 34,
         rotationSpeed: 0.015,
         orbitSpeed: 0.0008,
         color: "#fcc419", // Jaune-brun
-        path: "/laboratoire",
+        path: "/test",
         description:
             "Espace d'expérimentation où je teste de nouvelles idées, concepts et technologies avant de les intégrer dans mes projets principaux.",
         diameter: "142 984 km",
@@ -279,207 +279,202 @@ export function SolarSystem3D() {
       const starSizes = new Float32Array(starCount)
       const starColors = new Float32Array(starCount * 3)
 
-      // Créer des constellations reconnaissables
-      const constellations = [
+      const cosmicElements = [
         {
-          // Orion
-          name: "Orion",
-          positions: [
-            [-150, 30, -180],
-            [-140, 50, -190],
-            [-130, 70, -200],
-            [-160, 60, -210],
-            [-170, 40, -220],
-            [-120, 20, -230],
-            [-110, 0, -240],
-          ],
+          // Mini trou noir avec disque d'accrétion
+          name: "Mini Black Hole",
+          type: "blackhole",
+          position: [-200, 80, -150],
+          size: 3.0,
+          color: [0.1, 0.1, 0.1],
+          accretionDisk: {
+            innerRadius: 8,
+            outerRadius: 25,
+            particles: 150,
+            colors: [
+              [1.0, 0.4, 0.1],
+              [1.0, 0.6, 0.2],
+              [0.8, 0.3, 0.1],
+            ],
+          },
+        },
+        {
+          // Nébuleuse colorée
+          name: "Orion Nebula",
+          type: "nebula",
+          position: [-100, 120, -200],
           size: 2.0,
-          color: [1.0, 0.9, 0.8],
+          color: [0.8, 0.3, 0.9],
+          cloud: {
+            particles: 200,
+            radius: 40,
+            density: 0.6,
+          },
         },
         {
-          // Cassiopée
-          name: "Cassiopée",
-          positions: [
-            [50, 100, -150],
-            [70, 110, -160],
-            [90, 100, -170],
-            [110, 120, -180],
-            [130, 110, -190],
-          ],
-          size: 1.7,
-          color: [0.8, 0.8, 1.0],
+          // Pulsar
+          name: "Pulsar",
+          type: "pulsar",
+          position: [180, 100, 150],
+          size: 2.5,
+          color: [0.2, 0.8, 1.0],
+          beams: {
+            length: 60,
+            width: 3,
+            pulseSpeed: 2.0,
+          },
         },
         {
-          // Scorpion
-          name: "Scorpion",
-          positions: [
-            [-80, -50, 200],
-            [-60, -60, 210],
-            [-40, -65, 220],
-            [-20, -70, 230],
-            [0, -80, 240],
-            [20, -90, 250],
-            [40, -100, 260],
-            [60, -110, 270],
-            [80, -105, 280],
-            [100, -95, 290],
-          ],
-          size: 1.9,
-          color: [1.0, 0.7, 0.7],
-        },
-        {
-          // Taureau
-          name: "Taureau",
-          positions: [
-            [180, 20, 150],
-            [190, 30, 160],
-            [200, 40, 170],
-            [210, 30, 180],
-            [220, 20, 190],
-            [230, 10, 200],
-            [240, 0, 210],
-          ],
-          size: 1.8,
-          color: [0.9, 0.8, 0.6],
-        },
-        {
-          // Cygne (Croix du Nord)
-          name: "Cygne",
-          positions: [
-            [0, 150, 180],
-            [20, 160, 190],
-            [40, 170, 200],
-            [60, 180, 210],
-            [80, 190, 220],
-            [40, 170, 200],
-            [40, 150, 200],
-            [40, 130, 200],
-          ],
-          size: 1.7,
-          color: [0.8, 0.9, 1.0],
-        },
-        {
-          // Sagittaire
-          name: "Sagittaire",
-          positions: [
-            [-200, -30, 100],
-            [-190, -40, 110],
-            [-180, -50, 120],
-            [-170, -40, 130],
-            [-160, -30, 140],
-            [-170, -20, 150],
-            [-180, -10, 160],
-            [-170, -40, 130],
-            [-160, -50, 120],
-            [-150, -60, 110],
-          ],
+          // Amas d'étoiles
+          name: "Star Cluster",
+          type: "cluster",
+          position: [-150, -80, 180],
           size: 1.6,
-          color: [1.0, 0.8, 0.6],
+          color: [0.9, 0.9, 0.7],
+          cluster: {
+            stars: 80,
+            radius: 25,
+            brightness: 1.5,
+          },
         },
         {
-          // Lion
-          name: "Lion",
-          positions: [
-            [150, 30, 100],
-            [170, 40, 110],
-            [190, 35, 120],
-            [210, 30, 130],
-            [230, 25, 140],
-            [210, 30, 130],
-            [200, 10, 135],
-            [190, -10, 140],
-            [210, 30, 130],
-            [200, 50, 135],
-            [190, 70, 140],
-          ],
-          size: 1.7,
-          color: [0.9, 0.8, 0.7],
-        },
-        {
-          // Poissons
-          name: "Poissons",
-          positions: [
-            [-100, -20, -150],
-            [-90, -30, -160],
-            [-80, -40, -170],
-            [-70, -50, -180],
-            [-60, -60, -190],
-            [-50, -70, -200],
-            [-40, -60, -210],
-            [-30, -50, -220],
-            [-20, -40, -230],
-            [-10, -30, -240],
-          ],
-          size: 1.5,
-          color: [0.7, 0.8, 0.9],
-        },
-        {
-          // Gémeaux
-          name: "Gémeaux",
-          positions: [
-            [0, 80, -180],
-            [10, 90, -170],
-            [20, 100, -160],
-            [30, 110, -150],
-            [20, 100, -160],
-            [10, 110, -170],
-            [0, 120, -180],
-            [-10, 110, -190],
-            [-20, 100, -200],
-            [-10, 110, -190],
-            [0, 120, -180],
-          ],
-          size: 1.6,
-          color: [0.8, 0.9, 0.8],
-        },
-        {
-          // Croix du Sud (plus petite mais brillante)
-          name: "Croix du Sud",
-          positions: [
-            [0, -120, -100],
-            [0, -140, -100],
-            [0, -160, -100],
-            [0, -140, -100],
-            [-10, -140, -100],
-            [10, -140, -100],
-          ],
+          // Supernova remnant
+          name: "Supernova Remnant",
+          type: "supernova",
+          position: [120, 60, -180],
           size: 2.2,
-          color: [1.0, 0.9, 0.9],
-        },
-        {
-          // Andromède
-          name: "Andromède",
-          positions: [
-            [100, 120, 100],
-            [110, 130, 110],
-            [120, 140, 120],
-            [130, 150, 130],
-            [140, 160, 140],
-            [150, 170, 150],
-            [160, 180, 160],
-          ],
-          size: 1.7,
-          color: [0.9, 0.7, 0.9],
+          color: [1.0, 0.5, 0.3],
+          explosion: {
+            particles: 120,
+            radius: 35,
+            expansion: 0.5,
+          },
         },
       ]
 
-      // Ajouter les étoiles des constellations
+      // Créer les éléments cosmiques (sans les galaxies statiques)
       let posIndex = 0
-      constellations.forEach((constellation) => {
-        constellation.positions.forEach((pos) => {
+      cosmicElements.forEach((element) => {
+        if (element.type === "blackhole") {
+          // Créer le trou noir central (invisible)
           const i3 = posIndex * 3
-          starPositions[i3] = pos[0]
-          starPositions[i3 + 1] = pos[1]
-          starPositions[i3 + 2] = pos[2]
-
-          starSizes[posIndex] = constellation.size
-
-          starColors[i3] = constellation.color[0]
-          starColors[i3 + 1] = constellation.color[1]
-          starColors[i3 + 2] = constellation.color[2]
-
+          starPositions[i3] = element.position[0]
+          starPositions[i3 + 1] = element.position[1]
+          starPositions[i3 + 2] = element.position[2]
+          starSizes[posIndex] = 0.1 // Très petit pour simuler l'invisibilité
+          starColors[i3] = 0.05
+          starColors[i3 + 1] = 0.05
+          starColors[i3 + 2] = 0.05
           posIndex++
-        })
+
+          // Créer le disque d'accrétion
+          for (let i = 0; i < element.accretionDisk.particles; i++) {
+            const angle = (i / element.accretionDisk.particles) * Math.PI * 2
+            const radius =
+                element.accretionDisk.innerRadius +
+                Math.random() * (element.accretionDisk.outerRadius - element.accretionDisk.innerRadius)
+
+            const i3 = posIndex * 3
+            starPositions[i3] = element.position[0] + radius * Math.cos(angle)
+            starPositions[i3 + 1] = element.position[1] + (Math.random() - 0.5) * 3
+            starPositions[i3 + 2] = element.position[2] + radius * Math.sin(angle)
+
+            starSizes[posIndex] = 1.5 + Math.random() * 1.0
+
+            const colorChoice = Math.floor(Math.random() * element.accretionDisk.colors.length)
+            const chosenColor = element.accretionDisk.colors[colorChoice]
+            starColors[i3] = chosenColor[0]
+            starColors[i3 + 1] = chosenColor[1]
+            starColors[i3 + 2] = chosenColor[2]
+            posIndex++
+          }
+        } else if (element.type === "nebula") {
+          // Créer une nébuleuse
+          for (let i = 0; i < element.cloud.particles; i++) {
+            const theta = Math.random() * Math.PI * 2
+            const phi = Math.acos(Math.random() * 2 - 1)
+            const radius = Math.random() * element.cloud.radius
+
+            const i3 = posIndex * 3
+            starPositions[i3] = element.position[0] + radius * Math.sin(phi) * Math.cos(theta)
+            starPositions[i3 + 1] = element.position[1] + radius * Math.sin(phi) * Math.sin(theta)
+            starPositions[i3 + 2] = element.position[2] + radius * Math.cos(phi)
+
+            starSizes[posIndex] = element.size * (1.0 + Math.random() * 1.5)
+            starColors[i3] = element.color[0] * (0.6 + Math.random() * 0.4)
+            starColors[i3 + 1] = element.color[1] * (0.6 + Math.random() * 0.4)
+            starColors[i3 + 2] = element.color[2] * (0.6 + Math.random() * 0.4)
+            posIndex++
+          }
+        } else if (element.type === "pulsar") {
+          // Créer le pulsar central
+          const i3 = posIndex * 3
+          starPositions[i3] = element.position[0]
+          starPositions[i3 + 1] = element.position[1]
+          starPositions[i3 + 2] = element.position[2]
+          starSizes[posIndex] = element.size
+          starColors[i3] = element.color[0]
+          starColors[i3 + 1] = element.color[1]
+          starColors[i3 + 2] = element.color[2]
+          posIndex++
+
+          // Créer les faisceaux du pulsar
+          for (let beam = 0; beam < 2; beam++) {
+            const beamAngle = beam * Math.PI
+            for (let i = 0; i < 20; i++) {
+              const distance = (i / 20) * element.beams.length
+
+              const i3 = posIndex * 3
+              starPositions[i3] = element.position[0] + distance * Math.cos(beamAngle)
+              starPositions[i3 + 1] = element.position[1]
+              starPositions[i3 + 2] = element.position[2] + distance * Math.sin(beamAngle)
+
+              starSizes[posIndex] = element.beams.width * (1 - i / 20)
+              const intensity = 1 - (i / 20) * 0.7
+              starColors[i3] = element.color[0] * intensity
+              starColors[i3 + 1] = element.color[1] * intensity
+              starColors[i3 + 2] = element.color[2] * intensity
+              posIndex++
+            }
+          }
+        } else if (element.type === "cluster") {
+          // Créer un amas d'étoiles
+          for (let i = 0; i < element.cluster.stars; i++) {
+            const theta = Math.random() * Math.PI * 2
+            const phi = Math.acos(Math.random() * 2 - 1)
+            const radius = Math.random() * element.cluster.radius
+
+            const i3 = posIndex * 3
+            starPositions[i3] = element.position[0] + radius * Math.sin(phi) * Math.cos(theta)
+            starPositions[i3 + 1] = element.position[1] + radius * Math.sin(phi) * Math.sin(theta)
+            starPositions[i3 + 2] = element.position[2] + radius * Math.cos(phi)
+
+            starSizes[posIndex] = element.size * element.cluster.brightness * (0.8 + Math.random() * 0.4)
+            starColors[i3] = element.color[0] * (0.8 + Math.random() * 0.2)
+            starColors[i3 + 1] = element.color[1] * (0.8 + Math.random() * 0.2)
+            starColors[i3 + 2] = element.color[2] * (0.8 + Math.random() * 0.2)
+            posIndex++
+          }
+        } else if (element.type === "supernova") {
+          // Créer un reste de supernova
+          for (let i = 0; i < element.explosion.particles; i++) {
+            const theta = Math.random() * Math.PI * 2
+            const phi = Math.acos(Math.random() * 2 - 1)
+            const radius = Math.random() * element.explosion.radius
+
+            const i3 = posIndex * 3
+            starPositions[i3] = element.position[0] + radius * Math.sin(phi) * Math.cos(theta)
+            starPositions[i3 + 1] = element.position[1] + radius * Math.sin(phi) * Math.sin(theta)
+            starPositions[i3 + 2] = element.position[2] + radius * Math.cos(phi)
+
+            starSizes[posIndex] = element.size * (0.5 + Math.random() * 1.0)
+            const intensity = 1 - (radius / element.explosion.radius) * 0.5
+            starColors[i3] = element.color[0] * intensity
+            starColors[i3 + 1] = element.color[1] * intensity
+            starColors[i3 + 2] = element.color[2] * intensity
+            posIndex++
+          }
+        }
       })
 
       // Ajouter les étoiles aléatoires pour le reste
@@ -575,67 +570,6 @@ export function SolarSystem3D() {
 
       const stars = new THREE.Points(starGeometry, starMaterial)
       scene.add(stars)
-
-      // Ajouter des lignes pour connecter les étoiles des constellations
-      constellations.forEach((constellation) => {
-        const positions = constellation.positions
-
-        // Créer les lignes entre les points consécutifs de la constellation
-        for (let i = 0; i < positions.length - 1; i++) {
-          // Créer directement un tableau de points pour la ligne
-          const points = [
-            new THREE.Vector3(positions[i][0], positions[i][1], positions[i][2]),
-            new THREE.Vector3(positions[i + 1][0], positions[i + 1][1], positions[i + 1][2]),
-          ]
-
-          const lineGeometry = new THREE.BufferGeometry().setFromPoints(points)
-          const lineMaterial = new THREE.LineBasicMaterial({
-            color: new THREE.Color(constellation.color[0], constellation.color[1], constellation.color[2]),
-            transparent: true,
-            opacity: 0.4,
-            linewidth: 1.5, // Note: linewidth n'est pas supporté par WebGL, mais gardé pour référence
-          })
-
-          const line = new THREE.Line(lineGeometry, lineMaterial)
-          scene.add(line)
-        }
-
-        // Ajouter un texte pour le nom de la constellation
-        if (constellation.positions.length > 0) {
-          // Calculer le centre approximatif de la constellation
-          const centerPos = constellation.positions[Math.floor(constellation.positions.length / 2)]
-
-          // Créer un sprite pour le texte
-          const canvas = document.createElement("canvas")
-          canvas.width = 256
-          canvas.height = 128
-          const context = canvas.getContext("2d")
-
-          if (context) {
-            context.fillStyle = "rgba(0, 0, 0, 0)"
-            context.fillRect(0, 0, canvas.width, canvas.height)
-
-            // Dessiner le texte
-            context.font = "Bold 24px Arial"
-            context.fillStyle = `rgba(${constellation.color[0] * 255}, ${constellation.color[1] * 255}, ${constellation.color[2] * 255}, 0.8)`
-            context.textAlign = "center"
-            context.fillText(constellation.name, canvas.width / 2, canvas.height / 2)
-
-            // Créer une texture à partir du canvas
-            const texture = new THREE.CanvasTexture(canvas)
-            const material = new THREE.SpriteMaterial({
-              map: texture,
-              transparent: true,
-              depthTest: false,
-            })
-
-            const sprite = new THREE.Sprite(material)
-            sprite.position.set(centerPos[0], centerPos[1] + 10, centerPos[2]) // Positionner au-dessus de la constellation
-            sprite.scale.set(40, 20, 1) // Ajuster la taille
-            scene.add(sprite)
-          }
-        }
-      })
 
       // Ajouter des étoiles lointaines supplémentaires
       const distantStarCount = 2000
@@ -1603,6 +1537,26 @@ export function SolarSystem3D() {
         if (keysPressed.e) camera.position.y += moveSpeed
       }
 
+      const time = elapsedTime
+
+      galaxiesRef.current.forEach((galaxy, index) => {
+        const rotationSpeed = 0.02 * (1 + index * 0.3)
+        galaxy.rotation.y = time * rotationSpeed
+
+        // Update particle positions for spiral rotation
+        const positions = galaxy.geometry.attributes.position.array as Float32Array
+        for (let i = 0; i < positions.length; i += 3) {
+          const x = positions[i]
+          const z = positions[i + 2]
+          const radius = Math.sqrt(x * x + z * z)
+          const angle = Math.atan2(z, x) + time * rotationSpeed * (1 / (1 + radius * 0.1))
+
+          positions[i] = Math.cos(angle) * radius
+          positions[i + 2] = Math.sin(angle) * radius
+        }
+        galaxy.geometry.attributes.position.needsUpdate = true
+      })
+
       // Utiliser le composer au lieu du renderer
       composer.render()
     }
@@ -1690,6 +1644,13 @@ export function SolarSystem3D() {
       if (meteorGroup) {
         scene.remove(meteorGroup)
       }
+
+      galaxiesRef.current.forEach((galaxy) => {
+        galaxy.geometry.dispose()
+        if (galaxy.material instanceof THREE.Material) {
+          galaxy.material.dispose()
+        }
+      })
     }
   }, [router])
 
