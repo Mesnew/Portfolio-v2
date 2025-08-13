@@ -1,6 +1,5 @@
 "use client"
 
-import { SolarSystem3D } from "@/components/SolarSystem3D"
 import { useEffect, useState, useRef } from "react"
 
 interface AdvancedBlackHoleProps {
@@ -9,7 +8,6 @@ interface AdvancedBlackHoleProps {
 
 export default function AdvancedBlackHole({ onTransitionComplete }: AdvancedBlackHoleProps) {
   const [showBlackHole, setShowBlackHole] = useState(true)
-  const [showSystem, setShowSystem] = useState(false)
   const [loadingProgress, setLoadingProgress] = useState(0)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number>()
@@ -51,31 +49,27 @@ export default function AdvancedBlackHole({ onTransitionComplete }: AdvancedBlac
     }
 
     const animate = () => {
-      const fadeAlpha = time > 4.2 ? Math.max(0, 1 - (time - 4.2) * 3) : 0.1
-      ctx.fillStyle = `rgba(0, 0, 0, ${fadeAlpha})`
+      // Clear canvas with fade effect
+      ctx.fillStyle = "rgba(0, 0, 0, 0.1)"
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
       time += 0.016
 
-      const progress = Math.min((time / 4.5) * 100, 100)
+      const progress = Math.min((time / 5) * 100, 100)
       setLoadingProgress(progress)
 
-      if (time > 4.0 && !showSystem) {
-        setShowSystem(true)
-      }
-
-      const blackHoleAlpha = time > 4.2 ? Math.max(0, 1 - (time - 4.2) * 3) : 1
+      // Draw black hole
       const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 60)
-      gradient.addColorStop(0, `rgba(0, 0, 0, ${blackHoleAlpha})`)
-      gradient.addColorStop(0.8, `rgba(20, 10, 40, ${0.8 * blackHoleAlpha})`)
-      gradient.addColorStop(1, `rgba(255, 100, 0, ${0.3 * blackHoleAlpha})`)
+      gradient.addColorStop(0, "rgba(0, 0, 0, 1)")
+      gradient.addColorStop(0.8, "rgba(20, 10, 40, 0.8)")
+      gradient.addColorStop(1, "rgba(255, 100, 0, 0.3)")
 
       ctx.fillStyle = gradient
       ctx.beginPath()
       ctx.arc(centerX, centerY, 60, 0, Math.PI * 2)
       ctx.fill()
 
-      // Draw accretion disk particles with fade out
+      // Draw accretion disk particles
       particles.forEach((particle) => {
         particle.angle += particle.speed
         particle.radius -= 0.2
@@ -93,16 +87,18 @@ export default function AdvancedBlackHole({ onTransitionComplete }: AdvancedBlac
         const g = Math.floor(100 * temp)
         const b = Math.floor(20 * temp)
 
-        const particleAlpha = particle.opacity * blackHoleAlpha
-        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${particleAlpha})`
+        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${particle.opacity})`
         ctx.beginPath()
         ctx.arc(x, y, particle.size, 0, Math.PI * 2)
         ctx.fill()
       })
 
-      if (time > 4.5) {
+      if (time > 5) {
         setShowBlackHole(false)
         onTransitionComplete?.()
+        setTimeout(() => {
+          window.location.href = "/laboratoire"
+        }, 1000)
         return
       }
 
@@ -146,9 +142,14 @@ export default function AdvancedBlackHole({ onTransitionComplete }: AdvancedBlac
             </div>
         )}
 
-        <div className={`transition-opacity duration-1000 ${showSystem && !showBlackHole ? "opacity-100" : "opacity-0"}`}>
-          {showSystem && <SolarSystem3D />}
-        </div>
+        {!showBlackHole && (
+            <div className="fixed inset-0 z-40 bg-black flex items-center justify-center">
+              <div className="text-center text-white">
+                <h1 className="text-4xl font-bold mb-4">Système initialisé</h1>
+                <p className="text-xl text-white/80">Redirection vers le laboratoire...</p>
+              </div>
+            </div>
+        )}
       </main>
   )
 }
