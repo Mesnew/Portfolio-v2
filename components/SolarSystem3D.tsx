@@ -31,6 +31,160 @@ interface Planet {
   moons?: { distance: number; radius: number; color: string }[]
 }
 
+// Type pour les propriétés de la galaxie
+interface GalaxyProps {
+  position: [number, number, number]
+  scale: number
+  branches: number
+  particleCount: number
+  radius: number
+  spin: number
+  randomness: number
+  randomnessPower: number
+  insideColor: string
+  outsideColor: string
+}
+
+// Composant pour créer une galaxie tournante
+function RotatingGalaxy({
+                          position,
+                          scale,
+                          branches,
+                          particleCount,
+                          radius,
+                          spin,
+                          randomness,
+                          randomnessPower,
+                          insideColor,
+                          outsideColor,
+                        }: GalaxyProps) {
+  const galaxyGeometryRef = useRef<THREE.BufferGeometry | null>(null)
+  const galaxyMaterialRef = useRef<THREE.ShaderMaterial | null>(null)
+  const galaxyRef = useRef<THREE.Points | null>(null)
+  const sceneRef = useRef<THREE.Scene | null>(null)
+  const clockRef = useRef<THREE.Clock>(new THREE.Clock())
+
+  useEffect(() => {
+    // Vérifier si la scène est disponible
+    if (!sceneRef.current) return
+
+    // Géométrie de la galaxie
+    const galaxyGeometry = new THREE.BufferGeometry()
+    const positions = new Float32Array(particleCount * 3)
+    const colors = new Float32Array(particleCount * 3)
+
+    // Couleurs
+    const colorInside = new THREE.Color(insideColor)
+    const colorOutside = new THREE.Color(outsideColor)
+
+    for (let i = 0; i < particleCount; i++) {
+      // Position
+      const i3 = i * 3
+
+      const radiusRand = Math.random() * radius
+
+      const branchAngle = ((i % branches) / branches) * Math.PI * 2
+
+      const randomX =
+          Math.pow(Math.random(), randomnessPower) * (Math.random() < 0.5 ? 1 : -1) * randomness * radiusRand
+      const randomY =
+          Math.pow(Math.random(), randomnessPower) * (Math.random() < 0.5 ? 1 : -1) * randomness * radiusRand
+      const randomZ =
+          Math.pow(Math.random(), randomnessPower) * (Math.random() < 0.5 ? 1 : -1) * randomness * radiusRand
+
+      positions[i3] = Math.cos(branchAngle + spin * radiusRand) * radiusRand + randomX
+      positions[i3 + 1] = randomY
+      positions[i3 + 2] = Math.sin(branchAngle + spin * radiusRand) * radiusRand + randomZ
+
+      // Couleur
+      const mixedColor = colorInside.clone()
+      mixedColor.lerp(colorOutside, radiusRand / radius)
+
+      colors[i3] = mixedColor.r
+      colors[i3 + 1] = mixedColor.g
+      colors[i3 + 2] = mixedColor.b
+    }
+
+    galaxyGeometry.setAttribute("position", new THREE.BufferAttribute(positions, 3))
+    galaxyGeometry.setAttribute("color", new THREE.BufferAttribute(colors, 3))
+    galaxyGeometryRef.current = galaxyGeometry
+
+    // Matériau de la galaxie
+    const galaxyMaterial = new THREE.ShaderMaterial({
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      vertexColors: true,
+      uniforms: {
+        uTime: { value: 0 },
+        uSize: { value: 20 * scale },
+      },
+      vertexShader: `
+        uniform float uSize;
+        uniform float uTime;
+        
+        attribute vec3 color;
+        varying vec3 vColor;
+        
+        void main() {
+          vColor = color;
+          
+          // Ajout d'un effet de scintillement subtil
+          float twinkle = sin(uTime * 0.1 + position.x * 0.01 + position.y * 0.02 + position.z * 0.03) * 0.1 + 0.9;
+          
+          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+          gl_Position = projectionMatrix * mvPosition;
+          gl_PointSize = uSize * (300.0 / -mvPosition.z) * twinkle;
+        }
+      `,
+      fragmentShader: `
+        varying vec3 vColor;
+        
+        void main() {
+          float distanceToCenter = length(gl_PointCoord - 0.5);
+          float strength = 1.0 - smoothstep(0.0, 0.5, distanceToCenter);
+          
+          gl_FragColor = vec4(vColor, strength);
+        }
+      `,
+    })
+    galaxyMaterialRef.current = galaxyMaterial
+
+    // Points de la galaxie
+    const galaxy = new THREE.Points(galaxyGeometry, galaxyMaterial)
+    galaxy.position.set(position[0], position[1], position[2])
+    galaxy.scale.set(scale, scale, scale)
+    galaxyRef.current = galaxy
+
+    // Ajouter la galaxie à la scène
+    sceneRef.current.add(galaxy)
+
+    // Animation de la galaxie
+    const tick = () => {
+      if (galaxyMaterialRef.current) {
+        galaxyMaterialRef.current.uniforms.uTime.value = clockRef.current.getElapsedTime()
+      }
+      requestAnimationFrame(tick)
+    }
+
+    tick()
+
+    // Cleanup
+    return () => {
+      if (galaxyGeometryRef.current) {
+        galaxyGeometryRef.current.dispose()
+      }
+      if (galaxyMaterialRef.current) {
+        galaxyMaterialRef.current.dispose()
+      }
+      if (galaxyRef.current && sceneRef.current) {
+        sceneRef.current.remove(galaxyRef.current)
+      }
+    }
+  }, [position, scale, branches, particleCount, radius, spin, randomness, randomnessPower, insideColor, outsideColor])
+
+  return null // Ce composant ne rend rien directement
+}
+
 export function SolarSystem3D() {
   const containerRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
@@ -188,12 +342,16 @@ export function SolarSystem3D() {
     // Renderer setup
     const renderer = new THREE.WebGLRenderer({
       alpha: true,
-      antialias: true,
+      antialias: window.devicePixelRatio <= 1, // Only enable antialiasing on low-DPI displays
       powerPreference: "high-performance",
+      logarithmicDepthBuffer: true, // Better depth precision for large scenes
     })
     renderer.setSize(window.innerWidth, window.innerHeight)
     renderer.setClearColor(0x000000, 1)
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)) // Allow higher pixel ratio for better quality
+    renderer.shadowMap.enabled = true
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap // Softer shadows
+    renderer.outputColorSpace = THREE.SRGBColorSpace // Better color accuracy
 
     // Stocker le renderer dans la référence
     rendererRef.current = renderer
@@ -220,27 +378,26 @@ export function SolarSystem3D() {
     // Ajouter un effet de bloom amélioré pour rendre les objets lumineux plus brillants
     const bloomPass = new UnrealBloomPass(
         new THREE.Vector2(window.innerWidth, window.innerHeight),
-        0.7, // strength - augmenté pour plus d'éclat
-        0.5, // radius - légèrement augmenté pour un halo plus large
-        0.75, // threshold - légèrement réduit pour capturer plus d'éléments
+        0.5, // Reduced strength for more subtle effect
+        0.8, // Increased radius for smoother bloom
+        0.6, // Optimized threshold
     )
     composer.addPass(bloomPass)
 
     // Modifier les paramètres des contrôles pour améliorer la rotation avec la souris
     const controls = new OrbitControls(camera, renderer.domElement)
     controls.enableDamping = true
-    controls.dampingFactor = 0.1
+    controls.dampingFactor = 0.05 // Smoother damping
     controls.minDistance = 10
     controls.maxDistance = 200
-    controls.maxPolarAngle = Math.PI // Permettre une rotation verticale complète
-    controls.minPolarAngle = 0 // Permettre de passer au-dessus et en-dessous
+    controls.maxPolarAngle = Math.PI
+    controls.minPolarAngle = 0
     controls.autoRotate = false
-    controls.enableRotate = true
-    controls.rotateSpeed = 0.5 // Réduire légèrement pour plus de précision
-    controls.enableZoom = true
-    controls.zoomSpeed = 1.0
-    controls.enablePan = true
+    controls.autoRotateSpeed = 0.5
+    controls.zoomSpeed = 0.8 // Slower zoom for better control
     controls.panSpeed = 0.8
+    controls.rotateSpeed = 0.5 // Slower rotation for precision
+    controls.enablePan = true
     controls.screenSpacePanning = true
     controls.target.set(0, 0, 0) // Cibler le centre du soleil
     initialControlsTargetRef.current = controls.target.clone()
@@ -272,7 +429,7 @@ export function SolarSystem3D() {
 
     // Ajouter une fonction pour créer des étoiles plus réalistes
     const createStarfield = () => {
-      const starCount = 3000 // Augmenté de 2000 à 3000 pour plus d'étoiles
+      const starCount = 2000 // Reduced from 3000 for better performance
       const starGeometry = new THREE.BufferGeometry()
       const starPositions = new Float32Array(starCount * 3)
       const starSizes = new Float32Array(starCount)
@@ -289,13 +446,56 @@ export function SolarSystem3D() {
           accretionDisk: {
             innerRadius: 8,
             outerRadius: 25,
-            particles: 150,
+            particles: 100, // Reduced from 150
             colors: [
               [1.0, 0.4, 0.1],
               [1.0, 0.6, 0.2],
               [0.8, 0.3, 0.1],
             ],
           },
+        },
+        {
+          // Ceinture d'astéroïdes animée
+          name: "Asteroid Belt",
+          type: "asteroidbelt",
+          position: [0, 0, 0],
+          innerRadius: 25,
+          outerRadius: 35,
+          particles: 300,
+          color: [0.6, 0.5, 0.4],
+        },
+        {
+          // Nuage d'Oort avec comètes
+          name: "Oort Cloud",
+          type: "oortcloud",
+          position: [0, 0, 0],
+          radius: 400,
+          particles: 150,
+          color: [0.7, 0.8, 0.9],
+        },
+        {
+          // Vent solaire
+          name: "Solar Wind",
+          type: "solarwind",
+          position: [0, 0, 0],
+          particles: 200,
+          color: [1.0, 0.9, 0.6],
+        },
+        {
+          // Poussière interstellaire
+          name: "Interstellar Dust",
+          type: "dust",
+          position: [0, 0, 0],
+          particles: 400,
+          color: [0.4, 0.3, 0.5],
+        },
+        {
+          // Rayons cosmiques
+          name: "Cosmic Rays",
+          type: "cosmicrays",
+          position: [0, 0, 0],
+          particles: 100,
+          color: [0.8, 0.9, 1.0],
         },
         {
           // Nébuleuse colorée
@@ -354,7 +554,92 @@ export function SolarSystem3D() {
       // Créer les éléments cosmiques
       let posIndex = 0
       cosmicElements.forEach((element) => {
-        if (element.type === "blackhole") {
+        if (element.type === "asteroidbelt") {
+          for (let i = 0; i < element.particles; i++) {
+            const angle = (i / element.particles) * Math.PI * 2 + Math.random() * 0.5
+            const radius = element.innerRadius + Math.random() * (element.outerRadius - element.innerRadius)
+            const height = (Math.random() - 0.5) * 4
+
+            const i3 = posIndex * 3
+            starPositions[i3] = radius * Math.cos(angle)
+            starPositions[i3 + 1] = height
+            starPositions[i3 + 2] = radius * Math.sin(angle)
+
+            starSizes[posIndex] = 0.8 + Math.random() * 1.2
+            starColors[i3] = element.color[0] * (0.7 + Math.random() * 0.3)
+            starColors[i3 + 1] = element.color[1] * (0.7 + Math.random() * 0.3)
+            starColors[i3 + 2] = element.color[2] * (0.7 + Math.random() * 0.3)
+            posIndex++
+          }
+        } else if (element.type === "oortcloud") {
+          for (let i = 0; i < element.particles; i++) {
+            const theta = Math.random() * Math.PI * 2
+            const phi = Math.acos(Math.random() * 2 - 1)
+            const radius = element.radius * (0.8 + Math.random() * 0.4)
+
+            const i3 = posIndex * 3
+            starPositions[i3] = radius * Math.sin(phi) * Math.cos(theta)
+            starPositions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta)
+            starPositions[i3 + 2] = radius * Math.cos(phi)
+
+            starSizes[posIndex] = 0.5 + Math.random() * 0.8
+            starColors[i3] = element.color[0] * (0.6 + Math.random() * 0.4)
+            starColors[i3 + 1] = element.color[1] * (0.6 + Math.random() * 0.4)
+            starColors[i3 + 2] = element.color[2] * (0.6 + Math.random() * 0.4)
+            posIndex++
+          }
+        } else if (element.type === "solarwind") {
+          for (let i = 0; i < element.particles; i++) {
+            const angle = Math.random() * Math.PI * 2
+            const distance = 15 + Math.random() * 100
+            const height = (Math.random() - 0.5) * 20
+
+            const i3 = posIndex * 3
+            starPositions[i3] = distance * Math.cos(angle)
+            starPositions[i3 + 1] = height
+            starPositions[i3 + 2] = distance * Math.sin(angle)
+
+            starSizes[posIndex] = 0.3 + Math.random() * 0.5
+            starColors[i3] = element.color[0] * (0.8 + Math.random() * 0.2)
+            starColors[i3 + 1] = element.color[1] * (0.8 + Math.random() * 0.2)
+            starColors[i3 + 2] = element.color[2] * (0.8 + Math.random() * 0.2)
+            posIndex++
+          }
+        } else if (element.type === "dust") {
+          for (let i = 0; i < element.particles; i++) {
+            const theta = Math.random() * Math.PI * 2
+            const phi = Math.acos(Math.random() * 2 - 1)
+            const radius = 150 + Math.random() * 200
+
+            const i3 = posIndex * 3
+            starPositions[i3] = radius * Math.sin(phi) * Math.cos(theta)
+            starPositions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta)
+            starPositions[i3 + 2] = radius * Math.cos(phi)
+
+            starSizes[posIndex] = 0.2 + Math.random() * 0.4
+            starColors[i3] = element.color[0] * (0.5 + Math.random() * 0.5)
+            starColors[i3 + 1] = element.color[1] * (0.5 + Math.random() * 0.5)
+            starColors[i3 + 2] = element.color[2] * (0.5 + Math.random() * 0.5)
+            posIndex++
+          }
+        } else if (element.type === "cosmicrays") {
+          for (let i = 0; i < element.particles; i++) {
+            const theta = Math.random() * Math.PI * 2
+            const phi = Math.acos(Math.random() * 2 - 1)
+            const radius = 200 + Math.random() * 300
+
+            const i3 = posIndex * 3
+            starPositions[i3] = radius * Math.sin(phi) * Math.cos(theta)
+            starPositions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta)
+            starPositions[i3 + 2] = radius * Math.cos(phi)
+
+            starSizes[posIndex] = 0.8 + Math.random() * 1.5
+            starColors[i3] = element.color[0]
+            starColors[i3 + 1] = element.color[1]
+            starColors[i3 + 2] = element.color[2]
+            posIndex++
+          }
+        } else if (element.type === "blackhole") {
           // Créer le trou noir central (invisible)
           const i3 = posIndex * 3
           starPositions[i3] = element.position[0]
@@ -1190,28 +1475,18 @@ export function SolarSystem3D() {
         const elapsed = currentTime - startTime
 
         if (elapsed < duration) {
-          // Calculer la progression avec easing
           const t = elapsed / duration
-          const easeT = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t // easing
+          const easeT = 1 - Math.pow(1 - t, 3) // Cubic ease-out for smoother deceleration
 
-          // Interpoler la position de la caméra
           cameraRef.current!.position.lerpVectors(startPosition, targetPosition, easeT)
-
-          // Interpoler la cible des contrôles
           controlsRef.current!.target.lerpVectors(startTarget, planetPosition, easeT)
-
-          // Mettre à jour les contrôles
           controlsRef.current!.update()
 
-          // Continuer l'animation
           animationRef.current = requestAnimationFrame(animateZoom)
         } else {
-          // Finaliser l'animation
           cameraRef.current!.position.copy(targetPosition)
           controlsRef.current!.target.copy(planetPosition)
           controlsRef.current!.update()
-
-          // Réactiver les contrôles après l'animation
           controlsRef.current!.enabled = true
           setControlsEnabled(true)
         }
@@ -1628,9 +1903,263 @@ export function SolarSystem3D() {
   }, [router])
 
   // Ajouter un message d'aide pour la rotation
+
+  const createCosmicBackground = () => {
+    const backgroundElements = []
+
+    // Structures fractales cosmiques
+    for (let i = 0; i < 3; i++) {
+      const fractalGeometry = new THREE.BufferGeometry()
+      const fractalPositions = new Float32Array(500 * 3)
+      const fractalColors = new Float32Array(500 * 3)
+
+      for (let j = 0; j < 500; j++) {
+        const j3 = j * 3
+        const scale = Math.pow(0.7, i)
+        const angle = j * 0.618 * Math.PI * 2 // Golden ratio spiral
+        const radius = Math.sqrt(j) * 20 * scale
+
+        fractalPositions[j3] = Math.cos(angle) * radius + (Math.random() - 0.5) * 800
+        fractalPositions[j3 + 1] = Math.sin(angle) * radius + (Math.random() - 0.5) * 400
+        fractalPositions[j3 + 2] = (Math.random() - 0.5) * 1000 - 800
+
+        const hue = (j * 0.01 + i * 0.3) % 1
+        const color = new THREE.Color().setHSL(hue, 0.7, 0.5)
+        fractalColors[j3] = color.r
+        fractalColors[j3 + 1] = color.g
+        fractalColors[j3 + 2] = color.b
+      }
+
+      fractalGeometry.setAttribute("position", new THREE.BufferAttribute(fractalPositions, 3))
+      fractalGeometry.setAttribute("color", new THREE.BufferAttribute(fractalColors, 3))
+
+      const fractalMaterial = new THREE.PointsMaterial({
+        size: 2,
+        vertexColors: true,
+        blending: THREE.AdditiveBlending,
+        transparent: true,
+        opacity: 0.6,
+      })
+
+      const fractalPoints = new THREE.Points(fractalGeometry, fractalMaterial)
+      backgroundElements.push(fractalPoints)
+    }
+
+    // Portails dimensionnels
+    for (let i = 0; i < 2; i++) {
+      const portalGeometry = new THREE.RingGeometry(20, 25, 32)
+      const portalMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+          time: { value: 0 },
+          color1: { value: new THREE.Color(0x00ffff) },
+          color2: { value: new THREE.Color(0xff00ff) },
+        },
+        vertexShader: `
+          varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: `
+          uniform float time;
+          uniform vec3 color1;
+          uniform vec3 color2;
+          varying vec2 vUv;
+
+          void main() {
+            vec2 center = vec2(0.5);
+            float dist = distance(vUv, center);
+            float wave = sin(dist * 20.0 - time * 3.0) * 0.5 + 0.5;
+            vec3 color = mix(color1, color2, wave);
+            float alpha = 1.0 - smoothstep(0.3, 0.5, dist);
+            gl_FragColor = vec4(color, alpha * 0.7);
+          }
+        `,
+        transparent: true,
+        side: THREE.DoubleSide,
+      })
+
+      const portal = new THREE.Mesh(portalGeometry, portalMaterial)
+      portal.position.set((Math.random() - 0.5) * 1000, (Math.random() - 0.5) * 600, -600 - Math.random() * 400)
+      portal.rotation.x = Math.random() * Math.PI
+      portal.rotation.y = Math.random() * Math.PI
+      backgroundElements.push(portal)
+    }
+
+    // Ondes gravitationnelles visualisées
+    const waveGeometry = new THREE.BufferGeometry()
+    const wavePositions = new Float32Array(200 * 3)
+    const waveColors = new Float32Array(200 * 3)
+
+    for (let i = 0; i < 200; i++) {
+      const i3 = i * 3
+      const angle = (i / 200) * Math.PI * 4
+      const radius = 300 + Math.sin(angle * 0.5) * 100
+
+      wavePositions[i3] = Math.cos(angle) * radius
+      wavePositions[i3 + 1] = Math.sin(angle * 0.3) * 50
+      wavePositions[i3 + 2] = Math.sin(angle) * radius - 500
+
+      const intensity = Math.sin(angle * 2) * 0.5 + 0.5
+      waveColors[i3] = 0.2 + intensity * 0.8
+      waveColors[i3 + 1] = 0.6 + intensity * 0.4
+      waveColors[i3 + 2] = 1.0
+    }
+
+    waveGeometry.setAttribute("position", new THREE.BufferAttribute(wavePositions, 3))
+    waveGeometry.setAttribute("color", new THREE.BufferAttribute(waveColors, 3))
+
+    const waveMaterial = new THREE.PointsMaterial({
+      size: 3,
+      vertexColors: true,
+      blending: THREE.AdditiveBlending,
+      transparent: true,
+    })
+
+    const gravitationalWaves = new THREE.Points(waveGeometry, waveMaterial)
+    backgroundElements.push(gravitationalWaves)
+
+    // Matière noire simulée
+    const darkMatterGeometry = new THREE.BufferGeometry()
+    const darkMatterPositions = new Float32Array(800 * 3)
+    const darkMatterColors = new Float32Array(800 * 3)
+
+    for (let i = 0; i < 800; i++) {
+      const i3 = i * 3
+      const theta = Math.random() * Math.PI * 2
+      const phi = Math.acos(Math.random() * 2 - 1)
+      const radius = 400 + Math.random() * 600
+
+      darkMatterPositions[i3] = radius * Math.sin(phi) * Math.cos(theta)
+      darkMatterPositions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta)
+      darkMatterPositions[i3 + 2] = radius * Math.cos(phi) - 400
+
+      const opacity = Math.random() * 0.3
+      darkMatterColors[i3] = 0.1 * opacity
+      darkMatterColors[i3 + 1] = 0.05 * opacity
+      darkMatterColors[i3 + 2] = 0.2 * opacity
+    }
+
+    darkMatterGeometry.setAttribute("position", new THREE.BufferAttribute(darkMatterPositions, 3))
+    darkMatterGeometry.setAttribute("color", new THREE.BufferAttribute(darkMatterColors, 3))
+
+    const darkMatterMaterial = new THREE.PointsMaterial({
+      size: 1,
+      vertexColors: true,
+      blending: THREE.AdditiveBlending,
+      transparent: true,
+      opacity: 0.4,
+    })
+
+    const darkMatter = new THREE.Points(darkMatterGeometry, darkMatterMaterial)
+    backgroundElements.push(darkMatter)
+
+    return backgroundElements
+  }
+
+  const animateCosmicBackground = (time: number) => {
+    if (sceneRef.current) {
+      sceneRef.current.traverse((child) => {
+        if (child.material && child.material.uniforms && child.material.uniforms.time) {
+          child.material.uniforms.time.value = time
+        }
+
+        // Rotation des portails
+        if (child.geometry && child.geometry.type === "RingGeometry") {
+          child.rotation.z += 0.01
+          child.rotation.x += 0.005
+        }
+
+        // Animation des ondes gravitationnelles
+        if (child.material && child.material.type === "PointsMaterial" && child.geometry.attributes.color) {
+          const colors = child.geometry.attributes.color.array
+          for (let i = 0; i < colors.length; i += 3) {
+            const wave = Math.sin(time * 0.002 + i * 0.01) * 0.3 + 0.7
+            colors[i] *= wave
+            colors[i + 1] *= wave
+            colors[i + 2] *= wave
+          }
+          child.geometry.attributes.color.needsUpdate = true
+        }
+      })
+    }
+  }
+
+  useEffect(() => {
+    if (sceneRef.current) {
+      const cosmicBackground = createCosmicBackground()
+      cosmicBackground.forEach((element) => {
+        sceneRef.current?.add(element)
+      })
+    }
+  }, [])
+
+  const useFrame = (callback: (state: any) => void) => {
+    useEffect(() => {
+      let animationFrameId: number
+
+      const render = (time: number) => {
+        callback({ clock: new THREE.Clock(), time })
+        animationFrameId = requestAnimationFrame(render)
+      }
+
+      animationFrameId = requestAnimationFrame(render)
+
+      return () => {
+        cancelAnimationFrame(animationFrameId)
+      }
+    }, [callback])
+  }
+
+  useFrame((state) => {
+    const time = state.clock.getElapsedTime()
+
+    animateCosmicBackground(time)
+  })
+
   return (
       <>
         <div ref={containerRef} className="fixed top-0 left-0 w-full h-full -z-10" />
+
+        {/* Rotating Galaxies Background */}
+        <RotatingGalaxy
+            position={[-400, 200, -600]}
+            scale={0.8}
+            branches={4}
+            particleCount={6000} // Reduced from 8000
+            radius={150}
+            spin={0.3}
+            randomness={0.2}
+            randomnessPower={3}
+            insideColor="#ff6030"
+            outsideColor="#1b3984"
+        />
+        <RotatingGalaxy
+            position={[600, -150, -800]}
+            scale={0.6}
+            branches={6}
+            particleCount={4000} // Reduced from 6000
+            radius={120}
+            spin={-0.4}
+            randomness={0.3}
+            randomnessPower={2.5}
+            insideColor="#ff9500"
+            outsideColor="#4c1d95"
+        />
+        <RotatingGalaxy
+            position={[0, 400, -1200]}
+            scale={1.2}
+            branches={5}
+            particleCount={8000} // Reduced from 12000
+            radius={200}
+            spin={0.2}
+            randomness={0.15}
+            randomnessPower={4}
+            insideColor="#fbbf24"
+            outsideColor="#312e81"
+        />
+
         {hoveredPlanet && (
             <div
                 className="fixed pointer-events-none z-50 bg-black/70 text-white px-3 py-1.5 rounded-md text-sm"
