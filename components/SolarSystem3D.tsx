@@ -283,14 +283,14 @@ export function SolarSystem3D() {
         ],
       },
       {
-        name: "Test",
+        name: "Laboratoire",
         solarName: "Jupiter",
         radius: 1.8,
         distance: 34,
         rotationSpeed: 0.015,
         orbitSpeed: 0.0008,
         color: "#fcc419", // Jaune-brun
-        path: "/test",
+        path: "/laboratoire",
         description:
             "Espace d'expérimentation où je teste de nouvelles idées, concepts et technologies avant de les intégrer dans mes projets principaux.",
         diameter: "142 984 km",
@@ -312,7 +312,7 @@ export function SolarSystem3D() {
         rotationSpeed: 0.01,
         orbitSpeed: 0.0006,
         color: "#e9d8a6", // Beige-doré
-        path: "/test",
+        path: "/laboratoire",
         description:
             "Contenu supplémentaire et ressources diverses qui ne rentrent pas dans les autres catégories mais qui complètent mon univers numérique.",
         diameter: "120 536 km",
