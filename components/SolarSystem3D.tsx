@@ -461,7 +461,7 @@ export function SolarSystem3D() {
           position: [0, 0, 0],
           innerRadius: 25,
           outerRadius: 35,
-          particles: 300,
+          particles: 80,
           color: [0.6, 0.5, 0.4],
         },
         {
