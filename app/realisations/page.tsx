@@ -3,13 +3,16 @@
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { PlanetBackground3D } from "@/components/PlanetBackground3D"
+import { EnhancedCosmicBackground } from "@/components/EnhancedCosmicBackground"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ArrowUpRight, Star } from "lucide-react"
 import Image from "next/image"
 import { useState, useEffect } from "react"
-import { ProjectDetailModal, type ProjectDetail } from "@/components/project-detail-modal"
+import type { ProjectDetail } from "@/components/project-detail-modal"
 import { useRouter } from "next/navigation"
+import { ImageGallery } from "@/components/ImageGallery"
+import { Lightbox } from "@/components/Lightbox"
 
 export default function RealisationsPage() {
   const router = useRouter()
@@ -17,6 +20,10 @@ export default function RealisationsPage() {
   const [selectedProject, setSelectedProject] = useState<ProjectDetail | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [hoveredProject, setHoveredProject] = useState<number | null>(null)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxImages, setLightboxImages] = useState<string[]>([])
+  const [lightboxIndex, setLightboxIndex] = useState(0)
+  const [lightboxTitle, setLightboxTitle] = useState("")
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -56,6 +63,13 @@ export default function RealisationsPage() {
     router.push(url)
   }
 
+  const openLightbox = (images: string[], index: number, title: string) => {
+    setLightboxImages(images)
+    setLightboxIndex(index)
+    setLightboxTitle(title)
+    setLightboxOpen(true)
+  }
+
   const projects: ProjectDetail[] = [
     {
       id: 1,
@@ -72,8 +86,10 @@ export default function RealisationsPage() {
       image: "/placeholder.svg?height=600&width=800",
       logo: "/images/logos/aws.png",
       screenshots: [
-        "/placeholder.svg?height=600&width=800&text=AWS+Console",
-        "/placeholder.svg?height=600&width=800&text=CloudFormation+Template",
+        "/images/aws/aws-console.png",
+        "/images/aws/ec2-dashboard.png",
+        "/images/aws/s3-buckets.png",
+        "/images/aws/cloudformation.png",
       ],
       tags: ["Cloud", "AWS"],
       color: "#00A8FF",
@@ -86,7 +102,7 @@ export default function RealisationsPage() {
       title: "Déploiement d'agents via GPO",
       description: "Automatisation du déploiement d'agents OCS Inventory via GPO sur Active Directory",
       fullDescription:
-        "Concernant mon projet d'installation de GLPI, je devais installer un agent OCS sur chaque poste de l'entreprise pour qu'il soit référencé dans GLPI. Cela nous permettrait de garder une trace des postes connectés et de renforcer la sécurité. Ce principe d'automatisation devait se faire via une GPO sur le serveur Active Directory de l'entreprise.",
+        "Concernant mon projet d'installation de GLPI, je devais installer un agent OCS sur chaque poste de l'entreprise pour qu'il soit référencé dans GLPI. Ce projet a impliqué la configuration des groupes de sécurité, la mise en place d'un équilibreur de charge et l'automatisation du déploiement via des scripts.",
       challenges: [
         "Transformer un exécutable .exe en package avec les mêmes caractéristiques qu'un fichier .msi",
         "Configurer correctement la GPO pour un déploiement automatique au démarrage",
@@ -100,6 +116,10 @@ export default function RealisationsPage() {
       ],
       image: "/placeholder.svg?height=600&width=800",
       logo: "/images/logos/ocs.png",
+      screenshots: [
+        "/placeholder.svg?height=600&width=800&text=Active+Directory+GPO",
+        "/placeholder.svg?height=600&width=800&text=GLPI+Interface",
+      ],
       tags: ["Automatisation", "PowerShell", "Active Directory", "GPO"],
       color: "#00A8FF",
       demoUrl: "/realisations/gpo-project-details",
@@ -125,6 +145,10 @@ export default function RealisationsPage() {
       ],
       image: "/placeholder.svg?height=600&width=800",
       logo: "/images/logos/gitlab.png",
+      screenshots: [
+        "/placeholder.svg?height=600&width=800&text=GitLab+Repository",
+        "/placeholder.svg?height=600&width=800&text=Commit+History",
+      ],
       tags: ["Git", "Automatisation"],
       color: "#00A8FF",
       demoUrl: "/realisations/gitlab-project-details",
@@ -150,6 +174,10 @@ export default function RealisationsPage() {
       ],
       image: "/placeholder.svg?height=600&width=800",
       logo: "/images/logos/markdown.png",
+      screenshots: [
+        "/placeholder.svg?height=600&width=800&text=Markdown+Documentation",
+        "/placeholder.svg?height=600&width=800&text=DevOps+Guide",
+      ],
       tags: ["Markdown", "Documentation"],
       color: "#00A8FF",
       demoUrl: "/realisations/documentation-project-details",
@@ -175,6 +203,10 @@ export default function RealisationsPage() {
       ],
       image: "/placeholder.svg?height=600&width=800",
       logo: "/images/logos/gitlab.png",
+      screenshots: [
+        "/placeholder.svg?height=600&width=800&text=GitLab+CI/CD+Pipeline",
+        "/placeholder.svg?height=600&width=800&text=Pipeline+Jobs",
+      ],
       tags: ["Automatisation", "CI/CD"],
       color: "#00A8FF",
       demoUrl: "/realisations/cicd-project-details",
@@ -200,6 +232,10 @@ export default function RealisationsPage() {
       ],
       image: "/placeholder.svg?height=600&width=800",
       logo: "/images/logos/mysql.png",
+      screenshots: [
+        "/placeholder.svg?height=600&width=800&text=Docker+Container",
+        "/placeholder.svg?height=600&width=800&text=PostgreSQL+Database",
+      ],
       tags: ["SQL", "Docker"],
       color: "#00A8FF",
       demoUrl: "/realisations/database-project-details",
@@ -225,6 +261,10 @@ export default function RealisationsPage() {
       ],
       image: "/placeholder.svg?height=600&width=800",
       logo: "/images/logos/swagger.jpg",
+      screenshots: [
+        "/placeholder.svg?height=600&width=800&text=Swagger+UI",
+        "/placeholder.svg?height=600&width=800&text=API+Endpoints",
+      ],
       tags: ["API", "Swagger"],
       color: "#00A8FF",
       demoUrl: "/realisations/swagger-project-details",
@@ -250,6 +290,10 @@ export default function RealisationsPage() {
       ],
       image: "/placeholder.svg?height=600&width=800",
       logo: "/images/logos/glpi.png",
+      screenshots: [
+        "/placeholder.svg?height=600&width=800&text=GLPI+Dashboard",
+        "/placeholder.svg?height=600&width=800&text=Ticketing+System",
+      ],
       tags: ["Ticketing", "Linux", "Debian"],
       color: "#00A8FF",
       demoUrl: "/realisations/glpi-project-details",
@@ -262,6 +306,10 @@ export default function RealisationsPage() {
       description: "Configuration d'un switch",
       image: "/placeholder.svg?height=600&width=800",
       logo: "/images/logos/switch.png",
+      screenshots: [
+        "/placeholder.svg?height=600&width=800&text=Switch+Configuration",
+        "/placeholder.svg?height=600&width=800&text=Network+Diagram",
+      ],
       tags: ["Configuration", "Matériel"],
       color: "#00A8FF",
       demoUrl: "/realisations/switch-project-details",
@@ -273,6 +321,10 @@ export default function RealisationsPage() {
       description: "Création d'un site vitrine avec Docusaurus",
       image: "/placeholder.svg?height=600&width=800",
       logo: "/images/logos/javascript.jpg",
+      screenshots: [
+        "/placeholder.svg?height=600&width=800&text=Docusaurus+Site",
+        "/placeholder.svg?height=600&width=800&text=Responsive+Design",
+      ],
       tags: ["JavaScript", "React", "Docusaurus"],
       color: "#00A8FF",
       demoUrl: "/realisations/site-web-project-details",
@@ -285,6 +337,10 @@ export default function RealisationsPage() {
       description: "Développement d'une calculatrice avec une interface graphique",
       image: "/placeholder.svg?height=600&width=800",
       logo: "/images/logos/csharp.png",
+      screenshots: [
+        "/placeholder.svg?height=600&width=800&text=C%23+Calculator",
+        "/placeholder.svg?height=600&width=800&text=WPF+Interface",
+      ],
       tags: ["C#", ".NET", "WPF"],
       color: "#00A8FF",
       demoUrl: "/realisations/calculatrice-project-details",
@@ -297,6 +353,10 @@ export default function RealisationsPage() {
       description: "Développement d'une application de gestion bancaire",
       image: "/placeholder.svg?height=600&width=800",
       logo: "/images/logos/csharp.png",
+      screenshots: [
+        "/placeholder.svg?height=600&width=800&text=C%23+Bank+App",
+        "/placeholder.svg?height=600&width=800&text=SQL+Database",
+      ],
       tags: ["C#", ".NET", "SQL"],
       color: "#00A8FF",
       demoUrl: "/realisations/banque-project-details",
@@ -309,6 +369,10 @@ export default function RealisationsPage() {
       description: "Création d'une app de réservation de chambres d'hôtel",
       image: "/placeholder.svg?height=600&width=800",
       logo: "/images/logos/postgresql.png",
+      screenshots: [
+        "/placeholder.svg?height=600&width=800&text=Hotel+Reservation+App",
+        "/placeholder.svg?height=600&width=800&text=PHP+Backend",
+      ],
       tags: ["PostgreSQL", "PHP", "Bootstrap"],
       color: "#00A8FF",
       demoUrl: "/realisations/hotel-project-details",
@@ -323,6 +387,7 @@ export default function RealisationsPage() {
   return (
     <main className="min-h-screen flex flex-col relative overflow-hidden">
       <PlanetBackground3D planetType="mars" />
+      <EnhancedCosmicBackground />
       <div className="relative z-10 flex flex-col flex-grow">
         <Header />
 
@@ -404,6 +469,18 @@ export default function RealisationsPage() {
 
                       <CardContent className="text-center px-6">
                         <p className="text-white/90 mb-4 text-sm">{project.description}</p>
+                        {project.screenshots && project.screenshots.length > 0 && (
+                          <div className="mb-4" onClick={(e) => e.stopPropagation()}>
+                            <ImageGallery
+                              images={project.screenshots}
+                              title={project.title}
+                              onImageClick={(imageIndex) =>
+                                openLightbox(project.screenshots!, imageIndex, project.title)
+                              }
+                              className="rounded-lg overflow-hidden"
+                            />
+                          </div>
+                        )}
                       </CardContent>
 
                       <CardFooter className="flex justify-center gap-2 flex-wrap pt-0 pb-12">
@@ -453,11 +530,12 @@ export default function RealisationsPage() {
         <Footer />
       </div>
 
-      <ProjectDetailModal
-        project={selectedProject}
-        isOpen={isModalOpen}
-        onClose={closeProjectDetails}
-        onViewDetails={handleViewDetails}
+      <Lightbox
+        images={lightboxImages}
+        initialIndex={lightboxIndex}
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        title={lightboxTitle}
       />
     </main>
   )

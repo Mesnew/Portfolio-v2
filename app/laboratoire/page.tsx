@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { PlanetBackground3D } from "@/components/PlanetBackground3D"
+import { EnhancedCosmicBackground } from "@/components/EnhancedCosmicBackground"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -891,6 +892,7 @@ export default function LaboratoirePage() {
   return (
     <div className="min-h-screen flex flex-col">
       <PlanetBackground3D planetType="jupiter" />
+      <EnhancedCosmicBackground />
       <Header />
 
       <main className="flex-1 relative z-10">
@@ -932,10 +934,10 @@ export default function LaboratoirePage() {
             <TabsContent value="design" className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Générateur de Favicon */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Star className="h-5 w-5" />
+                <Card className="group hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 hover:scale-[1.02] hover:border-primary/30">
+                  <CardHeader className="group-hover:bg-primary/5 transition-colors duration-300">
+                    <CardTitle className="flex items-center gap-2 group-hover:text-primary transition-colors">
+                      <Star className="h-5 w-5 group-hover:rotate-12 transition-transform duration-300" />
                       Générateur de Favicon
                     </CardTitle>
                     <CardDescription>Créez des favicons personnalisés</CardDescription>
@@ -978,8 +980,11 @@ export default function LaboratoirePage() {
                       </div>
                     </div>
 
-                    <Button onClick={generateFavicon} className="w-full">
-                      <Sparkles className="h-4 w-4 mr-2" />
+                    <Button
+                      onClick={generateFavicon}
+                      className="w-full group/btn hover:scale-105 transition-all duration-200"
+                    >
+                      <Sparkles className="h-4 w-4 mr-2 group-hover/btn:animate-spin" />
                       Générer Favicon
                     </Button>
 
@@ -1008,10 +1013,10 @@ export default function LaboratoirePage() {
                 </Card>
 
                 {/* Extracteur de couleurs */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Eye className="h-5 w-5" />
+                <Card className="group hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 hover:scale-[1.02] hover:border-primary/30">
+                  <CardHeader className="group-hover:bg-primary/5 transition-colors duration-300">
+                    <CardTitle className="flex items-center gap-2 group-hover:text-primary transition-colors">
+                      <Eye className="h-5 w-5 group-hover:scale-110 transition-transform duration-300" />
                       Extracteur de couleurs
                     </CardTitle>
                     <CardDescription>Extrayez la palette d'une image</CardDescription>
@@ -1029,7 +1034,11 @@ export default function LaboratoirePage() {
                         ref={imageInputRef}
                         className="hidden"
                       />
-                      <Button variant="outline" onClick={() => imageInputRef.current?.click()} className="w-full mt-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => imageInputRef.current?.click()}
+                        className="w-full mt-2 hover:scale-105 transition-all duration-200"
+                      >
                         <Upload className="h-4 w-4 mr-2" />
                         Choisir une image
                       </Button>
@@ -1052,13 +1061,13 @@ export default function LaboratoirePage() {
                           {extractedColors.map((color, index) => (
                             <div
                               key={index}
-                              className="aspect-square rounded cursor-pointer border-2 border-transparent hover:border-white transition-all relative group"
+                              className="aspect-square rounded cursor-pointer border-2 border-transparent hover:border-white hover:scale-110 transition-all duration-200 relative group shadow-lg"
                               style={{ backgroundColor: color }}
                               onClick={() => copyToClipboard(color)}
                               title={color}
                             >
-                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Copy className="h-4 w-4 text-white drop-shadow-lg" />
+                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 bg-black/20 rounded">
+                                <Copy className="h-4 w-4 text-white drop-shadow-lg group-hover:scale-110 transition-transform" />
                               </div>
                             </div>
                           ))}
@@ -1070,10 +1079,10 @@ export default function LaboratoirePage() {
                 </Card>
 
                 {/* Générateur CSS */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Code className="h-5 w-5" />
+                <Card className="group hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 hover:scale-[1.02] hover:border-primary/30">
+                  <CardHeader className="group-hover:bg-primary/5 transition-colors duration-300">
+                    <CardTitle className="flex items-center gap-2 group-hover:text-primary transition-colors">
+                      <Code className="h-5 w-5 group-hover:rotate-6 transition-transform duration-300" />
                       Générateur CSS
                     </CardTitle>
                     <CardDescription>Créez des effets CSS visuellement</CardDescription>
@@ -1143,7 +1152,7 @@ export default function LaboratoirePage() {
                       </>
                     )}
 
-                    <Button onClick={generateCSS} className="w-full">
+                    <Button onClick={generateCSS} className="w-full hover:scale-105 transition-all duration-200">
                       <Code className="h-4 w-4 mr-2" />
                       Générer CSS
                     </Button>
@@ -1178,7 +1187,7 @@ export default function LaboratoirePage() {
                           variant="outline"
                           size="sm"
                           onClick={() => copyToClipboard(generatedCSS)}
-                          className="w-full"
+                          className="w-full hover:scale-105 transition-all duration-200"
                         >
                           <Copy className="h-4 w-4 mr-2" />
                           Copier CSS
@@ -1445,7 +1454,7 @@ export default function LaboratoirePage() {
                     </div>
 
                     <div>
-                      <Label>Texte de test</Label>
+                      <Label>Texte de laboratoire</Label>
                       <Textarea
                         value={regexTestString}
                         onChange={(e) => setRegexTestString(e.target.value)}
@@ -1605,10 +1614,6 @@ export default function LaboratoirePage() {
                             <div className="text-muted-foreground">{perfMetrics.fcp.toFixed(1)}s</div>
                           </div>
                           <div className="bg-muted p-2 rounded">
-                            <div className="font-medium">LCP</div>
-                            <div className="text-muted-foreground">{perfMetrics.lcp.toFixed(1)}s</div>
-                          </div>
-                          <div className="bg-muted p-2 rounded">
                             <div className="font-medium">FID</div>
                             <div className="text-muted-foreground">{perfMetrics.fid.toFixed(0)}ms</div>
                           </div>
@@ -1669,28 +1674,26 @@ export default function LaboratoirePage() {
                       </Button>
                     </div>
 
-                    {pixelGrid.length > 0 && (
-                      <div className="space-y-2">
-                        <div
-                          className="grid gap-1 mx-auto border p-2 rounded bg-white"
-                          style={{
-                            gridTemplateColumns: `repeat(${pixelGridSize[0]}, 1fr)`,
-                            width: "fit-content",
-                          }}
-                        >
-                          {pixelGrid.map((row, rowIndex) =>
-                            row.map((pixel, colIndex) => (
-                              <div
-                                key={`${rowIndex}-${colIndex}`}
-                                className="w-4 h-4 border border-gray-200 cursor-pointer hover:opacity-80"
-                                style={{ backgroundColor: pixel }}
-                                onClick={() => drawPixel(rowIndex, colIndex)}
-                              />
-                            )),
-                          )}
-                        </div>
+                    <div className="space-y-2">
+                      <div
+                        className="grid gap-1 mx-auto border p-2 rounded bg-white shadow-lg"
+                        style={{
+                          gridTemplateColumns: `repeat(${pixelGridSize[0]}, 1fr)`,
+                          width: "fit-content",
+                        }}
+                      >
+                        {pixelGrid.map((row, rowIndex) =>
+                          row.map((pixel, colIndex) => (
+                            <div
+                              key={`${rowIndex}-${colIndex}`}
+                              className="w-4 h-4 border border-gray-200 cursor-pointer hover:opacity-80 hover:scale-110 transition-all duration-150 hover:shadow-md"
+                              style={{ backgroundColor: pixel }}
+                              onClick={() => drawPixel(rowIndex, colIndex)}
+                            />
+                          )),
+                        )}
                       </div>
-                    )}
+                    </div>
                   </CardContent>
                 </Card>
 

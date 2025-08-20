@@ -28,8 +28,8 @@ export default function Home() {
   }
 
   return (
-      <main className="min-h-screen flex flex-col relative overflow-hidden">
-        <AdvancedBlackHole onTransitionComplete={handleTransitionComplete} />
-      </main>
+    <main className="min-h-screen flex flex-col relative overflow-hidden">
+      <AdvancedBlackHole onTransitionComplete={handleTransitionComplete} />
+    </main>
   )
 }

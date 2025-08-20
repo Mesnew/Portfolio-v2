@@ -5,6 +5,7 @@ import type React from "react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { PlanetBackground3D } from "@/components/PlanetBackground3D"
+import { EnhancedCosmicBackground } from "@/components/EnhancedCosmicBackground"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Building, GraduationCap, Briefcase, Eye, Table } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -274,6 +275,7 @@ export default function AboutPage() {
   return (
     <main className="min-h-screen flex flex-col relative overflow-hidden">
       <PlanetBackground3D planetType="mercury" />
+      <EnhancedCosmicBackground />
       <div className="relative z-10 flex flex-col flex-grow">
         <Header />
 

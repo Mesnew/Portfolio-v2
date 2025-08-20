@@ -8,6 +8,7 @@ import { AtSign, MapPin } from "lucide-react"
 import { GlassCard } from "@/components/glass-card"
 import dynamic from "next/dynamic"
 import { useEffect, useState } from "react"
+import { EnhancedCosmicBackground } from "@/components/EnhancedCosmicBackground"
 
 // Chargement dynamique de la carte pour éviter les erreurs SSR
 const MapComponent = dynamic(() => import("@/components/map-component"), {
@@ -29,6 +30,7 @@ export default function ContactPage() {
   return (
     <main className="min-h-screen flex flex-col relative overflow-hidden">
       <PlanetBackground3D planetType="venus" />
+      <EnhancedCosmicBackground />
       <div className="relative z-10 flex flex-col flex-grow">
         <Header />
 

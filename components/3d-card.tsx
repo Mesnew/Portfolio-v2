@@ -22,6 +22,7 @@ export function ThreeDCard({
   const [rotate, setRotate] = useState({ x: 0, y: 0 })
   const [glarePosition, setGlarePosition] = useState({ x: 0, y: 0 })
   const [isHovered, setIsHovered] = useState(false)
+  const [isPressed, setIsPressed] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -30,17 +31,14 @@ export function ThreeDCard({
     const card = cardRef.current
     const rect = card.getBoundingClientRect()
 
-    // Calculer la position relative de la souris dans la carte (de -0.5 à 0.5)
     const x = (e.clientX - rect.left) / rect.width - 0.5
     const y = (e.clientY - rect.top) / rect.height - 0.5
 
-    // Calculer l'angle de rotation (limité à ±15 degrés)
     setRotate({
       x: -y * 15,
       y: x * 15,
     })
 
-    // Positionner l'effet de brillance
     setGlarePosition({
       x: e.clientX - rect.left,
       y: e.clientY - rect.top,
@@ -53,43 +51,66 @@ export function ThreeDCard({
 
   const handleMouseLeave = () => {
     setIsHovered(false)
+    setIsPressed(false)
     setRotate({ x: 0, y: 0 })
+  }
+
+  const handleMouseDown = () => {
+    setIsPressed(true)
+  }
+
+  const handleMouseUp = () => {
+    setIsPressed(false)
   }
 
   return (
     <div
       ref={cardRef}
-      className={`relative overflow-hidden transition-transform duration-200 ${className}`}
+      className={`relative overflow-hidden transition-all duration-300 cursor-pointer ${className}`}
       style={{
         transform: isHovered
-          ? `perspective(1000px) rotateX(${rotate.x}deg) rotateY(${rotate.y}deg) scale3d(1.05, 1.05, 1.05)`
+          ? `perspective(1000px) rotateX(${rotate.x}deg) rotateY(${rotate.y}deg) scale3d(${isPressed ? 0.98 : 1.05}, ${isPressed ? 0.98 : 1.05}, ${isPressed ? 0.98 : 1.05})`
           : "perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)",
-        transition: "transform 0.2s ease-out",
+        transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
       }}
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
       onClick={onClick}
     >
       {children}
 
-      {/* Effet de brillance */}
+      {/* Enhanced glare effect */}
       {isHovered && (
         <div
-          className="absolute inset-0 pointer-events-none"
+          className="absolute inset-0 pointer-events-none transition-opacity duration-300"
           style={{
             background: `radial-gradient(circle at ${glarePosition.x}px ${glarePosition.y}px, ${glareColor} 0%, transparent 70%)`,
-            opacity: 0.7,
+            opacity: isPressed ? 0.9 : 0.7,
           }}
         />
       )}
 
-      {/* Effet d'ombre 3D */}
+      {/* Pulse effect on hover */}
+      {isHovered && (
+        <div
+          className="absolute inset-0 pointer-events-none animate-pulse"
+          style={{
+            background: `linear-gradient(45deg, transparent 30%, ${glareColor} 50%, transparent 70%)`,
+            opacity: 0.3,
+          }}
+        />
+      )}
+
+      {/* Enhanced shadow */}
       <div
-        className="absolute inset-0 pointer-events-none"
+        className="absolute inset-0 pointer-events-none transition-all duration-300"
         style={{
-          boxShadow: isHovered ? `0 ${depth}px ${depth * 1.5}px rgba(0, 0, 0, 0.2)` : "0 5px 15px rgba(0, 0, 0, 0.1)",
-          transition: "box-shadow 0.2s ease-out",
+          boxShadow: isHovered
+            ? `0 ${depth * 1.5}px ${depth * 2}px rgba(0, 0, 0, 0.25), 0 0 ${depth}px rgba(59, 130, 246, 0.15)`
+            : "0 5px 15px rgba(0, 0, 0, 0.1)",
         }}
       />
     </div>
