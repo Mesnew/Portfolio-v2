@@ -13,6 +13,7 @@ function StarField() {
     const colors = new Float32Array(2000 * 3)
 
     for (let i = 0; i < 2000; i++) {
+      // Distribute stars in a sphere around the scene
       const radius = Math.random() * 100 + 50
       const theta = Math.random() * Math.PI * 2
       const phi = Math.random() * Math.PI
@@ -21,20 +22,25 @@ function StarField() {
       positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta)
       positions[i * 3 + 2] = radius * Math.cos(phi)
 
+      // Vary star colors (white, blue, yellow, red)
       const colorType = Math.random()
       if (colorType < 0.7) {
+        // White stars
         colors[i * 3] = 1
         colors[i * 3 + 1] = 1
         colors[i * 3 + 2] = 1
       } else if (colorType < 0.85) {
+        // Blue stars
         colors[i * 3] = 0.7
         colors[i * 3 + 1] = 0.8
         colors[i * 3 + 2] = 1
       } else if (colorType < 0.95) {
+        // Yellow stars
         colors[i * 3] = 1
         colors[i * 3 + 1] = 1
         colors[i * 3 + 2] = 0.7
       } else {
+        // Red stars
         colors[i * 3] = 1
         colors[i * 3 + 1] = 0.7
         colors[i * 3 + 2] = 0.7
@@ -44,7 +50,7 @@ function StarField() {
     return [positions, colors]
   }, [])
 
-  useFrame(() => {
+  useFrame((state) => {
     if (ref.current) {
       ref.current.rotation.y += 0.0002
       ref.current.rotation.x += 0.0001
@@ -52,16 +58,16 @@ function StarField() {
   })
 
   return (
-      <Points ref={ref} positions={positions} stride={3}>
-        <PointMaterial
-            transparent
-            vertexColors
-            size={0.8}
-            sizeAttenuation={true}
-            depthWrite={false}
-            blending={THREE.AdditiveBlending}
-        />
-      </Points>
+    <Points ref={ref} positions={positions} stride={3}>
+      <PointMaterial
+        transparent
+        vertexColors
+        size={0.8}
+        sizeAttenuation={true}
+        depthWrite={false}
+        blending={THREE.AdditiveBlending}
+      />
+    </Points>
   )
 }
 
@@ -70,15 +76,17 @@ function CosmicDust() {
 
   const positions = useMemo(() => {
     const positions = new Float32Array(800 * 3)
+
     for (let i = 0; i < 800; i++) {
       positions[i * 3] = (Math.random() - 0.5) * 200
       positions[i * 3 + 1] = (Math.random() - 0.5) * 200
       positions[i * 3 + 2] = (Math.random() - 0.5) * 200
     }
+
     return positions
   }, [])
 
-  useFrame(() => {
+  useFrame((state) => {
     if (ref.current) {
       ref.current.rotation.y += 0.0001
       ref.current.rotation.z += 0.00005
@@ -86,17 +94,17 @@ function CosmicDust() {
   })
 
   return (
-      <Points ref={ref} positions={positions} stride={3}>
-        <PointMaterial
-            transparent
-            color="#4a90e2"
-            size={0.3}
-            sizeAttenuation={true}
-            depthWrite={false}
-            opacity={0.3}
-            blending={THREE.AdditiveBlending}
-        />
-      </Points>
+    <Points ref={ref} positions={positions} stride={3}>
+      <PointMaterial
+        transparent
+        color="#4a90e2"
+        size={0.3}
+        sizeAttenuation={true}
+        depthWrite={false}
+        opacity={0.3}
+        blending={THREE.AdditiveBlending}
+      />
+    </Points>
   )
 }
 
@@ -115,20 +123,20 @@ function DistantGalaxies() {
   }, [])
 
   return (
-      <>
-        {galaxies.map((galaxy, i) => (
-            <GalaxySpiral key={i} {...galaxy} />
-        ))}
-      </>
+    <>
+      {galaxies.map((galaxy, i) => (
+        <GalaxySpiral key={i} {...galaxy} />
+      ))}
+    </>
   )
 }
 
 function GalaxySpiral({
-                        position,
-                        rotation,
-                        scale,
-                        color,
-                      }: {
+  position,
+  rotation,
+  scale,
+  color,
+}: {
   position: [number, number, number]
   rotation: [number, number, number]
   scale: number
@@ -138,13 +146,16 @@ function GalaxySpiral({
 
   const positions = useMemo(() => {
     const positions = new Float32Array(200 * 3)
+
     for (let i = 0; i < 200; i++) {
       const angle = (i / 200) * Math.PI * 4
       const radius = (i / 200) * 15
+
       positions[i * 3] = Math.cos(angle) * radius
       positions[i * 3 + 1] = (Math.random() - 0.5) * 2
       positions[i * 3 + 2] = Math.sin(angle) * radius
     }
+
     return positions
   }, [])
 
@@ -155,19 +166,19 @@ function GalaxySpiral({
   })
 
   return (
-      <group position={position} rotation={rotation} scale={scale}>
-        <Points ref={ref} positions={positions} stride={3}>
-          <PointMaterial
-              transparent
-              color={color}
-              size={0.5}
-              sizeAttenuation={true}
-              depthWrite={false}
-              opacity={0.6}
-              blending={THREE.AdditiveBlending}
-          />
-        </Points>
-      </group>
+    <group position={position} rotation={rotation} scale={scale}>
+      <Points ref={ref} positions={positions} stride={3}>
+        <PointMaterial
+          transparent
+          color={color}
+          size={0.5}
+          sizeAttenuation={true}
+          depthWrite={false}
+          opacity={0.6}
+          blending={THREE.AdditiveBlending}
+        />
+      </Points>
+    </group>
   )
 }
 
@@ -179,6 +190,7 @@ function Nebula() {
     const colors = new Float32Array(1000 * 3)
 
     for (let i = 0; i < 1000; i++) {
+      // Create nebula-like cloud distribution
       const radius = Math.random() * 30 + 10
       const theta = Math.random() * Math.PI * 2
       const phi = Math.random() * Math.PI
@@ -187,6 +199,7 @@ function Nebula() {
       positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta)
       positions[i * 3 + 2] = radius * Math.cos(phi)
 
+      // Nebula colors (purple, pink, blue)
       const colorType = Math.random()
       if (colorType < 0.4) {
         colors[i * 3] = 0.8
@@ -206,7 +219,7 @@ function Nebula() {
     return [positions, colors]
   }, [])
 
-  useFrame(() => {
+  useFrame((state) => {
     if (ref.current) {
       ref.current.rotation.y += 0.0003
       ref.current.rotation.x += 0.0002
@@ -214,33 +227,31 @@ function Nebula() {
   })
 
   return (
-      <group position={[50, -30, -80]}>
-        <Points ref={ref} positions={positions} stride={3}>
-          <PointMaterial
-              transparent
-              vertexColors
-              size={1.5}
-              sizeAttenuation={true}
-              depthWrite={false}
-              opacity={0.4}
-              blending={THREE.AdditiveBlending}
-          />
-        </Points>
-      </group>
+    <group position={[50, -30, -80]}>
+      <Points ref={ref} positions={positions} stride={3}>
+        <PointMaterial
+          transparent
+          vertexColors
+          size={1.5}
+          sizeAttenuation={true}
+          depthWrite={false}
+          opacity={0.4}
+          blending={THREE.AdditiveBlending}
+        />
+      </Points>
+    </group>
   )
 }
 
 export function EnhancedCosmicBackground() {
   return (
-      <div className="fixed inset-0 -z-10">
-        <Canvas camera={{ position: [0, 0, 0], fov: 75 }} style={{ background: "transparent" }}>
-          <StarField />
-          <CosmicDust />
-          <DistantGalaxies />
-          <Nebula />
-        </Canvas>
-      </div>
+    <div className="fixed inset-0 -z-10">
+      <Canvas camera={{ position: [0, 0, 0], fov: 75 }} style={{ background: "transparent" }}>
+        <StarField />
+        <CosmicDust />
+        <DistantGalaxies />
+        <Nebula />
+      </Canvas>
+    </div>
   )
 }
-
-export default EnhancedCosmicBackground

@@ -33,6 +33,7 @@ export function ImageGallery({ images, title, onImageClick, className = "" }: Im
     setCurrentIndex(index)
   }
 
+  // Touch/Mouse drag handlers
   const handleStart = (clientX: number) => {
     setIsDragging(true)
     setStartX(clientX)
@@ -58,6 +59,7 @@ export function ImageGallery({ images, title, onImageClick, className = "" }: Im
     setTranslateX(0)
   }
 
+  // Mouse events
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault()
     handleStart(e.clientX)
@@ -71,6 +73,7 @@ export function ImageGallery({ images, title, onImageClick, className = "" }: Im
     handleEnd()
   }
 
+  // Touch events
   const handleTouchStart = (e: React.TouchEvent) => {
     handleStart(e.touches[0].clientX)
   }
@@ -106,97 +109,100 @@ export function ImageGallery({ images, title, onImageClick, className = "" }: Im
   if (images.length === 0) return null
 
   return (
-      <div className={`relative group ${className}`}>
+    <div className={`relative group ${className}`}>
+      {/* Main image container */}
+      <div
+        ref={containerRef}
+        className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden cursor-grab active:cursor-grabbing"
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         <div
-            ref={containerRef}
-            className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden cursor-grab active:cursor-grabbing"
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
+          className="flex transition-transform duration-300 ease-out h-full"
+          style={{
+            transform: `translateX(calc(-${currentIndex * 100}% + ${translateX}px))`,
+            transition: isDragging ? "none" : "transform 0.3s ease-out",
+          }}
         >
-          <div
-              className="flex transition-transform duration-300 ease-out h-full"
-              style={{
-                transform: `translateX(calc(-${currentIndex * 100}% + ${translateX}px))`,
-                transition: isDragging ? "none" : "transform 0.3s ease-out",
-              }}
-          >
-            {images.map((image, index) => (
-                <div key={index} className="flex-shrink-0 w-full h-full relative">
-                  <Image
-                      src={image || "/placeholder.svg"}
-                      alt={`${title} - Image ${index + 1}`}
-                      fill
-                      className="object-cover"
-                      draggable={false}
-                  />
-                  <Button
-                      variant="secondary"
-                      size="sm"
-                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/50 hover:bg-black/70 text-white border-0"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onImageClick?.(index)
-                      }}
-                  >
-                    <Expand className="h-4 w-4" />
-                  </Button>
-                </div>
-            ))}
-          </div>
-
-          {images.length > 1 && (
-              <>
-                <Button
-                    variant="secondary"
-                    size="sm"
-                    className="absolute left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/50 hover:bg-black/70 text-white border-0"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      prevImage()
-                    }}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                    variant="secondary"
-                    size="sm"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/50 hover:bg-black/70 text-white border-0"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      nextImage()
-                    }}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </>
-          )}
-
-          {images.length > 1 && (
-              <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
-                {currentIndex + 1} / {images.length}
-              </div>
-          )}
+          {images.map((image, index) => (
+            <div key={index} className="flex-shrink-0 w-full h-full relative">
+              <Image
+                src={image || "/placeholder.svg"}
+                alt={`${title} - Image ${index + 1}`}
+                fill
+                className="object-cover"
+                draggable={false}
+              />
+              {/* Expand button */}
+              <Button
+                variant="secondary"
+                size="sm"
+                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/50 hover:bg-black/70 text-white border-0"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onImageClick?.(index)
+                }}
+              >
+                <Expand className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
         </div>
 
+        {/* Navigation arrows */}
         {images.length > 1 && (
-            <div className="flex justify-center mt-3 gap-2">
-              {images.map((_, index) => (
-                  <button
-                      key={index}
-                      className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                          index === currentIndex ? "bg-blue-500 scale-125" : "bg-gray-400 hover:bg-gray-300"
-                      }`}
-                      onClick={() => goToImage(index)}
-                  />
-              ))}
-            </div>
+          <>
+            <Button
+              variant="secondary"
+              size="sm"
+              className="absolute left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/50 hover:bg-black/70 text-white border-0"
+              onClick={(e) => {
+                e.stopPropagation()
+                prevImage()
+              }}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/50 hover:bg-black/70 text-white border-0"
+              onClick={(e) => {
+                e.stopPropagation()
+                nextImage()
+              }}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </>
+        )}
+
+        {/* Image counter */}
+        {images.length > 1 && (
+          <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+            {currentIndex + 1} / {images.length}
+          </div>
         )}
       </div>
+
+      {/* Thumbnail dots */}
+      {images.length > 1 && (
+        <div className="flex justify-center mt-3 gap-2">
+          {images.map((_, index) => (
+            <button
+              key={index}
+              className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                index === currentIndex ? "bg-blue-500 scale-125" : "bg-gray-400 hover:bg-gray-300"
+              }`}
+              onClick={() => goToImage(index)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
-
-export default ImageGallery
