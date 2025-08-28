@@ -22,7 +22,7 @@ export function MatomoAnalytics({
         window._paq = window._paq || []
         window._paq.push(["trackPageView"])
         window._paq.push(["enableLinkTracking"])
-        window._paq.push(["setTrackerUrl", `${url}/matomo.php`])
+        window._paq.push(["setTrackerUrl", `${url}/analytics.php`])
         window._paq.push(["setSiteId", siteId])
 
         // Track page changes for SPA
@@ -54,10 +54,10 @@ export function MatomoAnalytics({
           _paq.push(['enableLinkTracking']);
           (function() {
             var u="${url}/";
-            _paq.push(['setTrackerUrl', u+'matomo.php']);
+            _paq.push(['setTrackerUrl', u+'analytics.php']);
             _paq.push(['setSiteId', '${siteId}']);
             var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-            g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+            g.async=true; g.src=u+'stats.js'; s.parentNode.insertBefore(g,s);
           })();
         `,
             }}
